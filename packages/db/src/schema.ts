@@ -147,6 +147,7 @@ export const CreateItemSchema = createInsertSchema(items, {
   status: z.enum(["available", "borrowed", "unavailable"]),
 }).omit({
   id: true,
+  ownerId: true,
   createdAt: true,
   updatedAt: true,
 });
