@@ -11,6 +11,7 @@ import { Badge } from "@acme/ui/badge";
 import { Breadcrumbs } from "~/app/_components/breadcrumbs";
 import { DelistItemButton } from "~/app/_components/delist-item-button";
 import { ItemImageDialog } from "~/app/_components/item-image-dialog";
+import { PrintQRCodeButton } from "~/app/_components/print-qr-code-button";
 import { ReserveItemButton } from "~/app/_components/reserve-item-button";
 import { UpcomingReservations } from "~/app/_components/upcoming-reservations";
 import { auth, getSession } from "~/auth/server";
@@ -196,7 +197,10 @@ async function ItemDetailContent({ itemId }: { itemId: string }) {
             <h2 className="text-foreground mb-3 text-xl font-semibold">
               Owner Actions
             </h2>
-            <DelistItemButton itemId={item.id} />
+            <div className="flex flex-wrap gap-3">
+              <PrintQRCodeButton itemId={item.id} itemTitle={item.title} />
+              <DelistItemButton itemId={item.id} />
+            </div>
           </div>
         )}
       </div>
