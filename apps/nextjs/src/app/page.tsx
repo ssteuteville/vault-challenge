@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 import { Button } from "@acme/ui/button";
 import { appRouter, createTRPCContext } from "@acme/api";
@@ -62,37 +63,89 @@ export default async function HomePage() {
             <h1 className="text-4xl font-bold tracking-tight text-primary sm:text-5xl md:text-6xl">
               VAULT
             </h1>
-            <Button asChild size="lg">
-              <Link href="/my-stuff">my stuff</Link>
-            </Button>
+            <div className="flex items-center gap-2">
+              {session?.user ? (
+                <>
+                  <Button asChild size="lg">
+                    <Link href="/my-stuff">my stuff</Link>
+                  </Button>
+                  <form>
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      formAction={async () => {
+                        "use server";
+                        await auth.api.signOut({
+                          headers: await headers(),
+                        });
+                        redirect("/");
+                      }}
+                    >
+                      Logout
+                    </Button>
+                  </form>
+                </>
+              ) : (
+                <form>
+                  <Button
+                    size="lg"
+                    formAction={async () => {
+                      "use server";
+                      const res = await auth.api.signInSocial({
+                        body: {
+                          provider: "discord",
+                          callbackURL: "/",
+                        },
+                      });
+                      if (!res.url) {
+                        throw new Error("No URL returned from signInSocial");
+                      }
+                      redirect(res.url);
+                    }}
+                  >
+                    Sign in with Discord
+                  </Button>
+                </form>
+              )}
+            </div>
           </header>
 
           {/* Main Content */}
           <div className="flex-1 overflow-y-auto px-2 sm:px-4 py-4 sm:py-8">
-            <Suspense
-              fallback={
-                <div>
-                  <div className="mb-6 flex items-center gap-2">
-                    <div className="h-8 w-16 rounded bg-muted-foreground/20 animate-pulse" />
-                    <div className="h-8 w-20 rounded bg-muted-foreground/20 animate-pulse" />
-                    <div className="h-8 w-24 rounded bg-muted-foreground/20 animate-pulse" />
-                    <div className="h-8 w-28 rounded bg-muted-foreground/20 animate-pulse" />
+            {session?.user ? (
+              <Suspense
+                fallback={
+                  <div>
+                    <div className="mb-6 flex items-center gap-2">
+                      <div className="h-8 w-16 rounded bg-muted-foreground/20 animate-pulse" />
+                      <div className="h-8 w-20 rounded bg-muted-foreground/20 animate-pulse" />
+                      <div className="h-8 w-24 rounded bg-muted-foreground/20 animate-pulse" />
+                      <div className="h-8 w-28 rounded bg-muted-foreground/20 animate-pulse" />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      <ItemCardSkeleton />
+                      <ItemCardSkeleton />
+                      <ItemCardSkeleton />
+                      <ItemCardSkeleton />
+                      <ItemCardSkeleton />
+                      <ItemCardSkeleton />
+                      <ItemCardSkeleton />
+                      <ItemCardSkeleton />
+                    </div>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    <ItemCardSkeleton />
-                    <ItemCardSkeleton />
-                    <ItemCardSkeleton />
-                    <ItemCardSkeleton />
-                    <ItemCardSkeleton />
-                    <ItemCardSkeleton />
-                    <ItemCardSkeleton />
-                    <ItemCardSkeleton />
-                  </div>
+                }
+              >
+                <ItemGridWrapper />
+              </Suspense>
+            ) : (
+              <div className="flex h-full items-center justify-center">
+                <div className="text-center">
+                  <p className="text-muted-foreground mb-4 text-lg">
+                    Please sign in to view items
+                  </p>
                 </div>
-              }
-            >
-              <ItemGridWrapper />
-            </Suspense>
+              </div>
+            )}
           </div>
         </div>
       </main>
