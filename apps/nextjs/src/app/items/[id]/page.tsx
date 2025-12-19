@@ -11,6 +11,7 @@ import { Badge } from "@acme/ui/badge";
 import { Breadcrumbs } from "~/app/_components/breadcrumbs";
 import { DelistItemButton } from "~/app/_components/delist-item-button";
 import { ItemImageDialog } from "~/app/_components/item-image-dialog";
+import { PickupDropoffButtons } from "~/app/_components/pickup-dropoff-buttons";
 import { PrintQRCodeButton } from "~/app/_components/print-qr-code-button";
 import { ReserveItemButton } from "~/app/_components/reserve-item-button";
 import { UpcomingReservations } from "~/app/_components/upcoming-reservations";
@@ -243,11 +244,16 @@ export default async function ItemDetailPage({
           </Suspense>
         </div>
 
-        <div className="mx-auto max-w-4xl pb-4 sm:pb-8">
+        <div className="mx-auto max-w-4xl pb-24 sm:pb-28">
           <Suspense fallback={<ItemDetailSkeleton />}>
             <ItemDetailContent itemId={id} />
           </Suspense>
         </div>
+
+        {/* Pick Up / Drop Off Buttons */}
+        <Suspense>
+          <PickupDropoffButtons itemId={id} />
+        </Suspense>
       </main>
     </HydrateClient>
   );

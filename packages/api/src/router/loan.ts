@@ -130,6 +130,42 @@ export const loanRouter = {
       });
     }),
 
+  getCurrentUserReservation: protectedProcedure
+    .input(z.object({ itemId: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // Get all reservations for this item by the current user
+      const userReservations = await ctx.db.query.loans.findMany({
+        where: and(
+          eq(loans.itemId, input.itemId),
+          eq(loans.borrowerId, ctx.session.user.id),
+          inArray(loans.status, ["pending", "approved", "reserved", "active"]),
+          isNotNull(loans.reservedStartDate),
+          isNotNull(loans.reservedEndDate),
+        ),
+        orderBy: (loans, { asc }) => [asc(loans.reservedStartDate)],
+      });
+
+      // Find the reservation that overlaps with today
+      const overlappingReservation = userReservations.find((reservation) => {
+        if (!reservation.reservedStartDate || !reservation.reservedEndDate) {
+          return false;
+        }
+        const startDate = new Date(reservation.reservedStartDate);
+        startDate.setHours(0, 0, 0, 0);
+        const endDate = new Date(reservation.reservedEndDate);
+        endDate.setHours(0, 0, 0, 0);
+
+        // Check if today overlaps with the reservation period
+        // Overlap if: startDate <= today <= endDate
+        return startDate <= today && today <= endDate;
+      });
+
+      return overlappingReservation ?? null;
+    }),
+
   getByOwner: protectedProcedure.query(async ({ ctx }) => {
     // Get all items owned by the user
     const userItems = await ctx.db.query.items.findMany({
@@ -207,7 +243,7 @@ export const loanRouter = {
       // Drizzle's PgTimestamp.mapToDriverValue expects a Date object but processes sql`now()` incorrectly
       // Using raw SQL bypasses the type mapper entirely
       await ctx.db.execute(
-        sql`UPDATE loans SET status = 'approved', approved_at = NOW() WHERE id = ${input.loanId}`
+        sql`UPDATE loans SET status = 'approved', approved_at = NOW() WHERE id = ${input.loanId}`,
       );
 
       // Fetch the updated loan to ensure proper Date serialization
@@ -255,7 +291,8 @@ export const loanRouter = {
       if (!["pending", "approved", "reserved"].includes(loan.status)) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Only pending, approved, or reserved reservations can be cancelled",
+          message:
+            "Only pending, approved, or reserved reservations can be cancelled",
         });
       }
 
@@ -268,14 +305,25 @@ export const loanRouter = {
       }
 
       // Update the loan status - use "rejected" for pending, "cancelled" for approved/reserved
+      // Using raw SQL to avoid Drizzle's timestamp mapper issues
+      // Drizzle's PgTimestamp.mapToDriverValue expects a Date object but processes sql`now()` incorrectly
+      // Using raw SQL bypasses the type mapper entirely
       const newStatus = loan.status === "pending" ? "rejected" : "cancelled";
-      const [updatedLoan] = await ctx.db
-        .update(loans)
-        .set({
-          status: newStatus,
-        })
-        .where(eq(loans.id, input.loanId))
-        .returning();
+      await ctx.db.execute(
+        sql`UPDATE loans SET status = ${newStatus} WHERE id = ${input.loanId}`,
+      );
+
+      // Fetch the updated loan to ensure proper Date serialization
+      const updatedLoan = await ctx.db.query.loans.findFirst({
+        where: eq(loans.id, input.loanId),
+      });
+
+      if (!updatedLoan) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Reservation not found after update",
+        });
+      }
 
       return updatedLoan;
     }),
@@ -336,18 +384,29 @@ export const loanRouter = {
       if (!["pending", "approved", "reserved"].includes(loan.status)) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Only pending, approved, or reserved reservations can be cancelled",
+          message:
+            "Only pending, approved, or reserved reservations can be cancelled",
         });
       }
 
-      // Update the loan status
-      const [updatedLoan] = await ctx.db
-        .update(loans)
-        .set({
-          status: "cancelled",
-        })
-        .where(eq(loans.id, input.loanId))
-        .returning();
+      // Update the loan status using raw SQL to avoid Drizzle's timestamp mapper issues
+      // Drizzle's PgTimestamp.mapToDriverValue expects a Date object but processes sql`now()` incorrectly
+      // Using raw SQL bypasses the type mapper entirely
+      await ctx.db.execute(
+        sql`UPDATE loans SET status = 'cancelled' WHERE id = ${input.loanId}`,
+      );
+
+      // Fetch the updated loan to ensure proper Date serialization
+      const updatedLoan = await ctx.db.query.loans.findFirst({
+        where: eq(loans.id, input.loanId),
+      });
+
+      if (!updatedLoan) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Reservation not found after update",
+        });
+      }
 
       return updatedLoan;
     }),
@@ -377,7 +436,8 @@ export const loanRouter = {
       if (!isBorrower && !isOwner) {
         throw new TRPCError({
           code: "FORBIDDEN",
-          message: "You can only mark reservations as borrowed for your own items or reservations",
+          message:
+            "You can only mark reservations as borrowed for your own items or reservations",
         });
       }
 
@@ -393,7 +453,8 @@ export const loanRouter = {
       if (!["approved", "reserved"].includes(loan.status)) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Only approved or reserved reservations can be marked as borrowed",
+          message:
+            "Only approved or reserved reservations can be marked as borrowed",
         });
       }
 
@@ -416,7 +477,7 @@ export const loanRouter = {
       // Drizzle's PgTimestamp.mapToDriverValue expects a Date object but processes sql`now()` incorrectly
       // Using raw SQL bypasses the type mapper entirely
       await ctx.db.execute(
-        sql`UPDATE loans SET status = 'active', borrowed_at = NOW() WHERE id = ${input.loanId}`
+        sql`UPDATE loans SET status = 'active', borrowed_at = NOW() WHERE id = ${input.loanId}`,
       );
 
       // Fetch the updated loan to ensure proper Date serialization
@@ -464,7 +525,8 @@ export const loanRouter = {
       if (loan.status !== "active") {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Only active (borrowed) reservations can be marked as returned",
+          message:
+            "Only active (borrowed) reservations can be marked as returned",
         });
       }
 
@@ -481,22 +543,22 @@ export const loanRouter = {
       if (loan.reservedEndDate) {
         const now = new Date();
         const reservedEndDate = new Date(loan.reservedEndDate);
-        
+
         // If returned early, update both returnedAt and reservedEndDate
         if (now < reservedEndDate) {
           await ctx.db.execute(
-            sql`UPDATE loans SET status = 'returned', returned_at = NOW(), reserved_end_date = NOW() WHERE id = ${input.loanId}`
+            sql`UPDATE loans SET status = 'returned', returned_at = NOW(), reserved_end_date = NOW() WHERE id = ${input.loanId}`,
           );
         } else {
           // Returned on time or late - just update returnedAt
           await ctx.db.execute(
-            sql`UPDATE loans SET status = 'returned', returned_at = NOW() WHERE id = ${input.loanId}`
+            sql`UPDATE loans SET status = 'returned', returned_at = NOW() WHERE id = ${input.loanId}`,
           );
         }
       } else {
         // No reserved end date, just mark as returned
         await ctx.db.execute(
-          sql`UPDATE loans SET status = 'returned', returned_at = NOW() WHERE id = ${input.loanId}`
+          sql`UPDATE loans SET status = 'returned', returned_at = NOW() WHERE id = ${input.loanId}`,
         );
       }
 
