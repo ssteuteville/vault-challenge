@@ -1,6 +1,7 @@
-import { Text, View, StyleSheet } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { Header } from "~/components/Header";
 import { colors } from "~/utils/theme";
 
 const styles = StyleSheet.create({
@@ -40,17 +41,21 @@ const styles = StyleSheet.create({
 
 export default function BorrowingScreen() {
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background.light }} edges={["top"]}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: colors.background.light }}
+      edges={["top"]}
+    >
+      <Header />
       <View style={styles.container}>
         <View style={styles.iconContainer}>
           <Text style={styles.icon}>📥</Text>
         </View>
         <Text style={styles.title}>Coming Soon</Text>
         <Text style={styles.description}>
-          Manage your borrowed items and reservations. This feature is being built and will be available soon!
+          Manage your borrowed items and reservations. This feature is being
+          built and will be available soon!
         </Text>
       </View>
     </SafeAreaView>
   );
 }
-

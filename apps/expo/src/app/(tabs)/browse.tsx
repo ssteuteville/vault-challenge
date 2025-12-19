@@ -20,6 +20,7 @@ import type { RouterOutputs } from "~/utils/api";
 import { trpc } from "~/utils/api";
 import { authClient } from "~/utils/auth";
 import { colors } from "~/utils/theme";
+import { Header } from "~/components/Header";
 
 type ItemStatus = "all" | "available" | "borrowed" | "unavailable";
 
@@ -740,6 +741,7 @@ export default function BrowseScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background.light }} edges={["top"]}>
+      <Header />
       <View style={{ flex: 1, paddingHorizontal: 20, paddingTop: 16, paddingBottom: 100 }}>
         {session?.user ? <ItemList /> : <EmptyState />}
       </View>
