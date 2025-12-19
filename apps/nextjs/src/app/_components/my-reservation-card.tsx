@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ImageIcon, User } from "lucide-react";
@@ -10,6 +11,7 @@ import { Button } from "@acme/ui/button";
 import { toast } from "@acme/ui/toast";
 
 import { useTRPC } from "~/trpc/react";
+import { FeedbackDialog } from "./feedback-dialog";
 
 type Reservation = RouterOutputs["loan"]["getByBorrower"][number];
 
@@ -114,6 +116,8 @@ function canCancel(reservation: Reservation): boolean {
 export function MyReservationCard({ reservation }: MyReservationCardProps) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
+  const [returnedLoanId, setReturnedLoanId] = useState<string | null>(null);
 
   const cancelMutation = useMutation(
     trpc.loan.cancel.mutationOptions({
@@ -147,9 +151,12 @@ export function MyReservationCard({ reservation }: MyReservationCardProps) {
 
   const markAsReturnedMutation = useMutation(
     trpc.loan.markAsReturned.mutationOptions({
-      onSuccess: async () => {
+      onSuccess: async (data) => {
         toast.success("Item marked as returned");
         await queryClient.invalidateQueries(trpc.loan.pathFilter());
+        // Open feedback dialog
+        setReturnedLoanId(data.id);
+        setFeedbackDialogOpen(true);
       },
       onError: (err) => {
         toast.error(
@@ -197,16 +204,17 @@ export function MyReservationCard({ reservation }: MyReservationCardProps) {
   })();
 
   return (
-    <Link href={`/items/${reservation.item.id}`}>
-      <div
-        className={`hover:bg-muted/80 border-border hover:border-primary/50 group cursor-pointer rounded-lg border p-6 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg ${
-          isApprovedNotBorrowed
-            ? "bg-green-50/50 border-green-200 dark:bg-green-950/20 dark:border-green-800"
-            : isPastDue
-              ? "bg-red-50/50 border-red-200 dark:bg-red-950/20 dark:border-red-800"
-              : "bg-muted"
-        }`}
-      >
+    <>
+      <Link href={`/items/${reservation.item.id}`}>
+        <div
+          className={`hover:bg-muted/80 border-border hover:border-primary/50 group cursor-pointer rounded-lg border p-6 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg ${
+            isApprovedNotBorrowed
+              ? "bg-green-50/50 border-green-200 dark:bg-green-950/20 dark:border-green-800"
+              : isPastDue
+                ? "bg-red-50/50 border-red-200 dark:bg-red-950/20 dark:border-red-800"
+                : "bg-muted"
+          }`}
+        >
         <div className="flex gap-4">
           {/* Item Image */}
           <div className="bg-muted-foreground/10 border-border group-hover:border-primary/50 relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-md border transition-all duration-200 group-hover:scale-105">
@@ -342,6 +350,20 @@ export function MyReservationCard({ reservation }: MyReservationCardProps) {
         </div>
       </div>
     </Link>
+    {returnedLoanId && (
+      <FeedbackDialog
+        open={feedbackDialogOpen}
+        onOpenChange={(open) => {
+          setFeedbackDialogOpen(open);
+          if (!open) {
+            setReturnedLoanId(null);
+          }
+        }}
+        loanId={returnedLoanId}
+        itemId={reservation.item.id}
+      />
+    )}
+    </>
   );
 }
 

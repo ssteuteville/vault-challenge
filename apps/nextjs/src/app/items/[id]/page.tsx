@@ -16,6 +16,7 @@ import { PickupDropoffButtons } from "~/app/_components/pickup-dropoff-buttons";
 import { PrintQRCodeButton } from "~/app/_components/print-qr-code-button";
 import { ReserveItemButton } from "~/app/_components/reserve-item-button";
 import { UpcomingReservations } from "~/app/_components/upcoming-reservations";
+import { ItemFeedbacks } from "~/app/_components/item-feedbacks";
 import { auth, getSession } from "~/auth/server";
 import { HydrateClient, prefetch, trpc } from "~/trpc/server";
 
@@ -197,6 +198,9 @@ async function ItemDetailContent({ itemId }: { itemId: string }) {
 
         {/* Upcoming Reservations */}
         <UpcomingReservations itemId={item.id} />
+
+        {/* Feedbacks */}
+        <ItemFeedbacks itemId={item.id} />
 
         {/* Owner Actions */}
         {session?.user?.id === item.ownerId && (

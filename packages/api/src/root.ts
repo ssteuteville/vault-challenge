@@ -1,5 +1,6 @@
 import { authRouter } from "./router/auth";
 import { favoriteRouter } from "./router/favorite";
+import { feedbackRouter } from "./router/feedback";
 import { itemRouter } from "./router/item";
 import { loanRouter } from "./router/loan";
 import { pineconeRouter } from "./router/pinecone";
@@ -9,6 +10,7 @@ import { createTRPCRouter } from "./trpc";
 export const appRouter = createTRPCRouter({
   auth: authRouter,
   favorite: favoriteRouter,
+  feedback: feedbackRouter,
   item: itemRouter,
   loan: loanRouter,
   post: postRouter,

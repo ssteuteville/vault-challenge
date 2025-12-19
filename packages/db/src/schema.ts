@@ -138,6 +138,35 @@ export const favorites = pgTable(
   ],
 );
 
+// Feedbacks table
+export const feedbacks = pgTable(
+  "feedbacks",
+  {
+    id: uuid("id").notNull().primaryKey().defaultRandom(),
+    loanId: uuid("loan_id")
+      .notNull()
+      .references(() => loans.id, { onDelete: "cascade" }),
+    borrowerId: text("borrower_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    itemId: uuid("item_id")
+      .notNull()
+      .references(() => items.id, { onDelete: "cascade" }),
+    content: text("content").notNull(),
+    isPublic: boolean("is_public").default(false).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .$onUpdateFn(() => sql`now()`)
+      .notNull(),
+  },
+  (table) => [
+    index("feedbacks_loan_id_idx").on(table.loanId),
+    index("feedbacks_item_id_idx").on(table.itemId),
+    index("feedbacks_borrower_id_idx").on(table.borrowerId),
+  ],
+);
+
 // Relations
 export const itemRelations = relations(items, ({ one, many }) => ({
   owner: one(user, {
@@ -146,9 +175,10 @@ export const itemRelations = relations(items, ({ one, many }) => ({
   }),
   loans: many(loans),
   favorites: many(favorites),
+  feedbacks: many(feedbacks),
 }));
 
-export const loanRelations = relations(loans, ({ one }) => ({
+export const loanRelations = relations(loans, ({ one, many }) => ({
   item: one(items, {
     fields: [loans.itemId],
     references: [items.id],
@@ -157,6 +187,7 @@ export const loanRelations = relations(loans, ({ one }) => ({
     fields: [loans.borrowerId],
     references: [user.id],
   }),
+  feedbacks: many(feedbacks),
 }));
 
 export const favoriteRelations = relations(favorites, ({ one }) => ({
@@ -170,6 +201,21 @@ export const favoriteRelations = relations(favorites, ({ one }) => ({
   }),
 }));
 
+export const feedbackRelations = relations(feedbacks, ({ one }) => ({
+  loan: one(loans, {
+    fields: [feedbacks.loanId],
+    references: [loans.id],
+  }),
+  borrower: one(user, {
+    fields: [feedbacks.borrowerId],
+    references: [user.id],
+  }),
+  item: one(items, {
+    fields: [feedbacks.itemId],
+    references: [items.id],
+  }),
+}));
+
 // Extend userRelations to include items and loans
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
@@ -177,6 +223,7 @@ export const userRelations = relations(user, ({ many }) => ({
   items: many(items),
   loans: many(loans),
   favorites: many(favorites),
+  feedbacks: many(feedbacks),
 }));
 
 // Zod schemas
