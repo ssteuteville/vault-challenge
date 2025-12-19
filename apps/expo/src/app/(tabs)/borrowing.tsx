@@ -168,12 +168,13 @@ function SignInPrompt() {
         Sign in to view and manage your reservations
       </Text>
       <Pressable
-        onPress={() =>
-          authClient.signIn.social({
+        onPress={() => {
+          console.log("signing in");
+          return authClient.signIn.social({
             provider: "discord",
             callbackURL: "/",
-          })
-        }
+          });
+        }}
         style={styles.signInButton}
       >
         <Text style={styles.signInButtonText}>Sign in with Discord</Text>
