@@ -1,8 +1,9 @@
 import type { TRPCRouterRecord } from "@trpc/server";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod/v4";
 
-import { desc, eq } from "@acme/db";
-import { CreateItemSchema, items, loans } from "@acme/db/schema";
+import { desc, eq, sql } from "@acme/db";
+import { CreateItemSchema, UpdateItemSchema, items, loans } from "@acme/db/schema";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
 
@@ -64,6 +65,7 @@ function computeEffectiveStatus(
 export const itemRouter = {
   all: publicProcedure.query(async ({ ctx }) => {
     const itemsData = await ctx.db.query.items.findMany({
+      where: eq(items.isListed, true),
       orderBy: [desc(items.createdAt)],
       with: {
         owner: true,
@@ -135,5 +137,65 @@ export const itemRouter = {
         })
         .returning();
       return item;
+    }),
+
+  update: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+        data: UpdateItemSchema,
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Get the item to verify ownership
+      const item = await ctx.db.query.items.findFirst({
+        where: eq(items.id, input.id),
+      });
+
+      if (!item) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Item not found",
+        });
+      }
+
+      // Verify the user owns the item
+      if (item.ownerId !== ctx.session.user.id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You can only update your own items",
+        });
+      }
+
+      // Update the item using raw SQL to avoid Drizzle's timestamp mapper issues
+      // Drizzle's PgTimestamp.mapToDriverValue expects a Date object but processes sql`now()` incorrectly
+      // Using raw SQL bypasses the type mapper entirely
+      // For now, handle the common case (isListed) and extend as needed
+      if (input.data.isListed !== undefined) {
+        await ctx.db.execute(
+          sql`UPDATE items SET is_listed = ${input.data.isListed}, updated_at = NOW() WHERE id = ${input.id}`
+        );
+      } else {
+        // For other fields, use Drizzle's update but without returning to avoid timestamp issues
+        // Then fetch separately
+        await ctx.db
+          .update(items)
+          .set(input.data)
+          .where(eq(items.id, input.id));
+      }
+
+      // Fetch the updated item to ensure proper Date serialization
+      const updatedItem = await ctx.db.query.items.findFirst({
+        where: eq(items.id, input.id),
+      });
+
+      if (!updatedItem) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Item not found after update",
+        });
+      }
+
+      return updatedItem;
     }),
 } satisfies TRPCRouterRecord;

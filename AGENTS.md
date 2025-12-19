@@ -78,3 +78,62 @@ const createReservation = useMutation(
 
 - See `apps/nextjs/src/app/_components/posts.tsx` for query examples
 - See `apps/nextjs/src/app/_components/add-item-form.tsx` for mutation examples
+
+## Drizzle Timestamp Updates
+
+⚠️ **CRITICAL: When updating timestamp fields in Drizzle ORM mutations, ALWAYS use raw SQL with `sql`NOW()``instead of`.set()` with Date objects.**
+
+Drizzle's `PgTimestamp.mapToDriverValue` expects a Date object but processes `sql`now()``incorrectly when used with`.set()`. This causes `value.toISOString is not a function` errors.
+
+### ❌ WRONG - This will cause "value.toISOString is not a function" error:
+
+```typescript
+// DON'T DO THIS - causes timestamp serialization errors
+const [updatedLoan] = await ctx.db
+  .update(loans)
+  .set({
+    status: "active",
+    borrowedAt: new Date(), // ❌ This causes the error
+  })
+  .where(eq(loans.id, loanId))
+  .returning();
+```
+
+### ✅ CORRECT - Use raw SQL with `sql`NOW()``:
+
+```typescript
+import { sql } from "@acme/db";
+
+// Use raw SQL to bypass Drizzle's timestamp mapper
+await ctx.db.execute(
+  sql`UPDATE loans SET status = 'active', borrowed_at = NOW() WHERE id = ${loanId}`,
+);
+
+// Then fetch the updated record to ensure proper Date serialization
+const updatedLoan = await ctx.db.query.loans.findFirst({
+  where: eq(loans.id, loanId),
+});
+
+if (!updatedLoan) {
+  throw new TRPCError({
+    code: "NOT_FOUND",
+    message: "Loan not found after update",
+  });
+}
+
+return updatedLoan;
+```
+
+### When to Use This Pattern:
+
+- **ALWAYS** when updating timestamp fields like `borrowedAt`, `returnedAt`, `approvedAt`, `updatedAt`
+- **ALWAYS** when setting timestamps to the current time (`NOW()`)
+- **NOT needed** when inserting new records (Drizzle handles that correctly)
+- **NOT needed** for non-timestamp fields
+
+### Reference Examples:
+
+- See `packages/api/src/router/loan.ts`:
+  - `approve` mutation (lines 206-211) - sets `approved_at`
+  - `markAsBorrowed` mutation (lines 415-420) - sets `borrowed_at`
+  - `markAsReturned` mutation (lines 480-501) - sets `returned_at`

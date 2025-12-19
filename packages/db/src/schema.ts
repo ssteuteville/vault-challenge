@@ -64,6 +64,7 @@ export const items = pgTable(
     imageUrl: text("image_url"),
     requiresApproval: boolean("requires_approval").default(true).notNull(),
     status: itemStatusEnum("status").notNull().default("available"),
+    isListed: boolean("is_listed").default(true).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true })
       .defaultNow()
@@ -168,6 +169,7 @@ export const CreateItemSchema = createInsertSchema(items, {
     .nullable(),
   requiresApproval: z.boolean(),
   status: z.enum(["available", "borrowed", "unavailable"]),
+  isListed: z.boolean().optional(),
 }).omit({
   id: true,
   ownerId: true,
@@ -185,6 +187,7 @@ export const UpdateItemSchema = createInsertSchema(items, {
     .nullable(),
   requiresApproval: z.boolean().optional(),
   status: z.enum(["available", "borrowed", "unavailable"]).optional(),
+  isListed: z.boolean().optional(),
 }).omit({
   id: true,
   ownerId: true,

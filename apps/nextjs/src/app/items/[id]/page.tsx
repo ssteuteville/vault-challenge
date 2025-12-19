@@ -9,6 +9,7 @@ import { appRouter, createTRPCContext } from "@acme/api";
 import { Badge } from "@acme/ui/badge";
 
 import { Breadcrumbs } from "~/app/_components/breadcrumbs";
+import { DelistItemButton } from "~/app/_components/delist-item-button";
 import { ItemImageDialog } from "~/app/_components/item-image-dialog";
 import { ReserveItemButton } from "~/app/_components/reserve-item-button";
 import { UpcomingReservations } from "~/app/_components/upcoming-reservations";
@@ -188,6 +189,16 @@ async function ItemDetailContent({ itemId }: { itemId: string }) {
 
         {/* Upcoming Reservations */}
         <UpcomingReservations itemId={item.id} />
+
+        {/* Owner Actions */}
+        {session?.user?.id === item.ownerId && (
+          <div className="border-border mt-6 border-t pt-6">
+            <h2 className="text-foreground mb-3 text-xl font-semibold">
+              Owner Actions
+            </h2>
+            <DelistItemButton itemId={item.id} />
+          </div>
+        )}
       </div>
     </div>
   );
