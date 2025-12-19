@@ -1,6 +1,8 @@
 import { Text, View, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { colors } from "~/utils/theme";
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -13,7 +15,7 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: 24,
-    backgroundColor: "#F3E8FF",
+    backgroundColor: colors.secondary.light,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 32,
@@ -24,13 +26,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#18181B",
+    color: colors.foreground.light,
     marginBottom: 8,
     textAlign: "center",
   },
   description: {
     fontSize: 16,
-    color: "#71717A",
+    color: colors.mutedForeground.light,
     textAlign: "center",
     lineHeight: 24,
   },
@@ -38,7 +40,7 @@ const styles = StyleSheet.create({
 
 export default function SharingScreen() {
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#FAFAFA" }} edges={["top"]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background.light }} edges={["top"]}>
       <View style={styles.container}>
         <View style={styles.iconContainer}>
           <Text style={styles.icon}>📤</Text>

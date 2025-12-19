@@ -7,6 +7,8 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
+import { colors, tabColors } from "~/utils/theme";
+
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const AnimatedText = Animated.createAnimatedComponent(Text);
 
@@ -15,13 +17,13 @@ const TAB_CONFIG = {
     icon: (focused: boolean) =>
       (focused ? "share" : "share-outline") as keyof typeof Ionicons.glyphMap,
     label: "Sharing",
-    color: "#9333EA", // Purple
+    color: tabColors.sharing,
   },
   browse: {
     icon: (focused: boolean) =>
       (focused ? "search" : "search-outline") as keyof typeof Ionicons.glyphMap,
     label: "Browse",
-    color: "#10B981", // Green
+    color: tabColors.browse,
   },
   borrowing: {
     icon: (focused: boolean) =>
@@ -29,7 +31,7 @@ const TAB_CONFIG = {
         ? "library"
         : "library-outline") as keyof typeof Ionicons.glyphMap,
     label: "Borrowing",
-    color: "#F59E0B", // Orange
+    color: tabColors.borrowing,
   },
 };
 
@@ -167,7 +169,9 @@ export function CustomTabBar({
                       <Ionicons
                         name={config.icon(isFocused)}
                         size={24}
-                        color={isFocused ? config.color : "#9CA3AF"}
+                        color={
+                          isFocused ? config.color : colors.tabBar.inactive
+                        }
                       />
                     </Animated.View>
                     {/* Only render label for center tab when focused to keep icon centered */}
@@ -206,7 +210,7 @@ const styles = StyleSheet.create({
   },
   tabBar: {
     flexDirection: "row",
-    backgroundColor: "#2A2A2A",
+    backgroundColor: colors.tabBar.background,
     borderRadius: 30,
     paddingHorizontal: 12,
     paddingVertical: 8,

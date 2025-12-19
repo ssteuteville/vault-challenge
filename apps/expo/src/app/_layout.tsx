@@ -2,8 +2,10 @@ import { useColorScheme } from "react-native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { queryClient } from "~/utils/api";
+import { colors } from "~/utils/theme";
 
 import "../styles.css";
 
@@ -12,7 +14,8 @@ import "../styles.css";
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   return (
-    <QueryClientProvider client={queryClient}>
+    <SafeAreaProvider>
+      <QueryClientProvider client={queryClient}>
       {/*
           The Stack component displays the current page.
           Tab navigation is handled by (tabs)/_layout.tsx
@@ -21,11 +24,11 @@ export default function RootLayout() {
       <Stack
         screenOptions={{
           headerStyle: {
-            backgroundColor: "#18181B",
+            backgroundColor: colors.tabBar.background,
           },
-          headerTintColor: "#FAFAFA",
+          headerTintColor: colors.foreground.dark,
           contentStyle: {
-            backgroundColor: colorScheme == "dark" ? "#09090B" : "#FFFFFF",
+            backgroundColor: colorScheme == "dark" ? colors.background.dark : colors.card.light,
           },
         }}
       >
@@ -37,6 +40,7 @@ export default function RootLayout() {
         />
       </Stack>
       <StatusBar />
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </SafeAreaProvider>
   );
 }

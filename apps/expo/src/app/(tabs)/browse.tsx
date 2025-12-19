@@ -19,6 +19,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { RouterOutputs } from "~/utils/api";
 import { trpc } from "~/utils/api";
 import { authClient } from "~/utils/auth";
+import { colors } from "~/utils/theme";
 
 type ItemStatus = "all" | "available" | "borrowed" | "unavailable";
 
@@ -82,7 +83,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   categoryTag: {
-    backgroundColor: "#F3E8FF",
+    backgroundColor: colors.secondary.light,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 6,
@@ -90,7 +91,7 @@ const styles = StyleSheet.create({
   categoryText: {
     fontSize: 11,
     fontWeight: "600",
-    color: "#7C3AED",
+    color: colors.primary,
   },
   statusBadge: {
     paddingHorizontal: 12,
@@ -185,8 +186,8 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   modalFilterOptionActive: {
-    backgroundColor: "#F3E8FF",
-    borderColor: "#9333EA",
+    backgroundColor: colors.secondary.light,
+    borderColor: colors.primary,
   },
   modalFilterOptionInactive: {
     backgroundColor: "#FAFAFA",
@@ -197,7 +198,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   modalFilterOptionTextActive: {
-    color: "#9333EA",
+    color: colors.primary,
   },
   modalFilterOptionTextInactive: {
     color: "#18181B",
@@ -226,8 +227,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#FAFAFA",
   },
   userListItemSelected: {
-    backgroundColor: "#F3E8FF",
-    borderColor: "#9333EA",
+    backgroundColor: colors.secondary.light,
+    borderColor: colors.primary,
   },
   userName: {
     fontSize: 16,
@@ -259,7 +260,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   modalDoneButton: {
-    backgroundColor: "#9333EA",
+    backgroundColor: colors.primary,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: "center",
@@ -312,16 +313,16 @@ const styles = StyleSheet.create({
 function EmptyState() {
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 32 }}>
-      <Text style={{ fontSize: 56, fontWeight: "900", color: "#9333EA", marginBottom: 24, letterSpacing: -1 }}>
+      <Text style={{ fontSize: 56, fontWeight: "900", color: colors.primary, marginBottom: 24, letterSpacing: -1 }}>
         VAULT
       </Text>
-      <View style={{ width: 96, height: 96, borderRadius: 24, backgroundColor: "#F3E8FF", alignItems: "center", justifyContent: "center", marginBottom: 32 }}>
+      <View style={{ width: 96, height: 96, borderRadius: 24, backgroundColor: colors.secondary.light, alignItems: "center", justifyContent: "center", marginBottom: 32 }}>
         <Text style={{ fontSize: 48 }}>🔐</Text>
       </View>
-      <Text style={{ fontSize: 24, fontWeight: "700", color: "#18181B", marginBottom: 8 }}>
+      <Text style={{ fontSize: 24, fontWeight: "700", color: colors.foreground.light, marginBottom: 8 }}>
         Welcome to Vault
       </Text>
-      <Text style={{ fontSize: 16, color: "#71717A", textAlign: "center", marginBottom: 32, lineHeight: 24 }}>
+      <Text style={{ fontSize: 16, color: colors.mutedForeground.light, textAlign: "center", marginBottom: 32, lineHeight: 24 }}>
         Sign in to browse and borrow items from your community
       </Text>
       <Pressable
@@ -332,20 +333,20 @@ function EmptyState() {
           })
         }
         style={{
-          backgroundColor: "#9333EA",
+          backgroundColor: colors.primary,
           width: "100%",
           alignItems: "center",
           justifyContent: "center",
           borderRadius: 16,
           paddingVertical: 16,
-          shadowColor: "#9333EA",
+          shadowColor: colors.primary,
           shadowOffset: { width: 0, height: 8 },
           shadowOpacity: 0.3,
           shadowRadius: 16,
           elevation: 8,
         }}
       >
-        <Text style={{ fontSize: 18, fontWeight: "700", color: "#FFFFFF" }}>
+        <Text style={{ fontSize: 18, fontWeight: "700", color: colors.primaryForeground }}>
           Sign in with Discord
         </Text>
       </Pressable>
@@ -451,7 +452,7 @@ function FilterModal({
               )}
               {usersLoading ? (
                 <View style={{ paddingVertical: 20, alignItems: "center" }}>
-                  <ActivityIndicator size="small" color="#9333EA" />
+                  <ActivityIndicator size="small" color={colors.primary} />
                 </View>
               ) : users.length === 0 ? (
                 <View style={{ paddingVertical: 20 }}>
@@ -507,15 +508,15 @@ function ItemCard({ item }: { item: Item }) {
 
   const statusConfig = {
     available: {
-      bg: "#10B981",
+      bg: colors.status.available,
       label: "Available",
     },
     borrowed: {
-      bg: "#F59E0B",
+      bg: colors.status.borrowed,
       label: "Borrowed",
     },
     unavailable: {
-      bg: "#6B7280",
+      bg: colors.status.unavailable,
       label: "Unavailable",
     },
   };
@@ -647,7 +648,7 @@ function ItemList() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#9333EA" />
+        <ActivityIndicator size="large" color={colors.primary} />
         <Text style={styles.loadingText}>Loading items...</Text>
       </View>
     );
@@ -679,13 +680,13 @@ function ItemList() {
                 <View
                   key={index}
                   style={{
-                    backgroundColor: "#9333EA",
+                    backgroundColor: colors.primary,
                     borderRadius: 10,
                     paddingHorizontal: 8,
                     paddingVertical: 2,
                   }}
                 >
-                  <Text style={{ fontSize: 12, fontWeight: "700", color: "#FFFFFF" }}>
+                  <Text style={{ fontSize: 12, fontWeight: "700", color: colors.primaryForeground }}>
                     {badge}
                   </Text>
                 </View>
@@ -738,7 +739,7 @@ export default function BrowseScreen() {
   const { data: session } = authClient.useSession();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#FAFAFA" }} edges={["top"]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background.light }} edges={["top"]}>
       <View style={{ flex: 1, paddingHorizontal: 20, paddingTop: 16, paddingBottom: 100 }}>
         {session?.user ? <ItemList /> : <EmptyState />}
       </View>
