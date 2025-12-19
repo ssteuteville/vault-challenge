@@ -51,10 +51,6 @@ async function ItemDetailContent({ itemId }: { itemId: string }) {
 
   const effectiveStatus =
     (item as { effectiveStatus?: string }).effectiveStatus ?? item.status;
-  const canReserve =
-    session?.user &&
-    session.user.id !== item.ownerId &&
-    effectiveStatus === "available";
 
   const categories = item.category
     ? item.category.split(", ").filter(Boolean)
@@ -277,12 +273,11 @@ async function ReserveButtonWrapper({ itemId }: { itemId: string }) {
     return null;
   }
 
-  const effectiveStatus =
-    (item as { effectiveStatus?: string }).effectiveStatus ?? item.status;
+  // Check base status for reserving - users can reserve future dates even if reserved today
   const canReserve =
     session?.user &&
     session.user.id !== item.ownerId &&
-    effectiveStatus === "available";
+    item.status === "available";
 
   if (!canReserve) {
     return null;
