@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import { headers } from "next/headers";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { appRouter, createTRPCContext } from "@acme/api";
@@ -8,6 +7,7 @@ import { Button } from "@acme/ui/button";
 
 import { auth, getSession } from "~/auth/server";
 import { HydrateClient, prefetch, trpc } from "~/trpc/server";
+import { HeaderActions } from "./_components/header-actions";
 import { ItemGrid } from "./_components/item-grid";
 
 function ItemCardSkeleton() {
@@ -53,6 +53,28 @@ export default async function HomePage() {
 
   prefetch(trpc.item.all.queryOptions());
 
+  const logoutAction = async () => {
+    "use server";
+    await auth.api.signOut({
+      headers: await headers(),
+    });
+    redirect("/");
+  };
+
+  const signInAction = async () => {
+    "use server";
+    const res = await auth.api.signInSocial({
+      body: {
+        provider: "discord",
+        callbackURL: "/",
+      },
+    });
+    if (!res.url) {
+      throw new Error("No URL returned from signInSocial");
+    }
+    redirect(res.url);
+  };
+
   return (
     <HydrateClient>
       <main className="container min-h-screen px-0 sm:px-4">
@@ -62,54 +84,11 @@ export default async function HomePage() {
             <h1 className="text-primary text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
               VAULT
             </h1>
-            <div className="flex items-center gap-2">
-              {session?.user ? (
-                <>
-                  <Button asChild size="lg">
-                    <Link href="/my-reservations">my reservations</Link>
-                  </Button>
-                  <Button asChild size="lg">
-                    <Link href="/my-stuff">my stuff</Link>
-                  </Button>
-                  <form>
-                    <Button
-                      size="lg"
-                      variant="outline"
-                      formAction={async () => {
-                        "use server";
-                        await auth.api.signOut({
-                          headers: await headers(),
-                        });
-                        redirect("/");
-                      }}
-                    >
-                      Logout
-                    </Button>
-                  </form>
-                </>
-              ) : (
-                <form>
-                  <Button
-                    size="lg"
-                    formAction={async () => {
-                      "use server";
-                      const res = await auth.api.signInSocial({
-                        body: {
-                          provider: "discord",
-                          callbackURL: "/",
-                        },
-                      });
-                      if (!res.url) {
-                        throw new Error("No URL returned from signInSocial");
-                      }
-                      redirect(res.url);
-                    }}
-                  >
-                    Sign in with Discord
-                  </Button>
-                </form>
-              )}
-            </div>
+            <HeaderActions
+              isAuthenticated={!!session?.user}
+              logoutAction={logoutAction}
+              signInAction={signInAction}
+            />
           </header>
 
           {/* Main Content */}
@@ -142,9 +121,18 @@ export default async function HomePage() {
             ) : (
               <div className="flex h-full items-center justify-center">
                 <div className="text-center">
-                  <p className="text-muted-foreground mb-4 text-lg">
+                  <p className="text-muted-foreground mb-6 text-lg">
                     Please sign in to view items
                   </p>
+                  <form>
+                    <Button
+                      size="lg"
+                      className="h-10 px-6"
+                      formAction={signInAction}
+                    >
+                      Sign in with Discord
+                    </Button>
+                  </form>
                 </div>
               </div>
             )}
