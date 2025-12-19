@@ -249,8 +249,8 @@ export function ItemGrid({ items }: ItemGridProps) {
   if (filteredItems.length === 0) {
     return (
       <div>
-        {/* Search - Always Visible */}
-        <div className="mb-4">
+        {/* Mobile Search - Always Visible */}
+        <div className="mb-4 sm:hidden">
           <div className="relative w-full">
             <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
             <Input

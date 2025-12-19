@@ -11,6 +11,7 @@ import { Badge } from "@acme/ui/badge";
 import { Breadcrumbs } from "~/app/_components/breadcrumbs";
 import { ItemImageDialog } from "~/app/_components/item-image-dialog";
 import { ReserveItemButton } from "~/app/_components/reserve-item-button";
+import { UpcomingReservations } from "~/app/_components/upcoming-reservations";
 import { auth, getSession } from "~/auth/server";
 import { HydrateClient, prefetch, trpc } from "~/trpc/server";
 
@@ -98,6 +99,12 @@ async function ItemDetailContent({ itemId }: { itemId: string }) {
             >
               {effectiveStatus}
             </span>
+            {item.loans && item.loans.length > 0 && (
+              <span className="text-muted-foreground text-xs">
+                {item.loans.length} loan{item.loans.length !== 1 ? "s" : ""}{" "}
+                recorded
+              </span>
+            )}
           </div>
         </div>
 
@@ -179,18 +186,8 @@ async function ItemDetailContent({ itemId }: { itemId: string }) {
           </div>
         </div>
 
-        {/* Loans Info */}
-        {item.loans && item.loans.length > 0 && (
-          <div className="border-border border-t pt-6">
-            <h2 className="text-foreground mb-3 text-xl font-semibold">
-              Loan History
-            </h2>
-            <p className="text-muted-foreground text-sm">
-              {item.loans.length} loan{item.loans.length !== 1 ? "s" : ""}{" "}
-              recorded
-            </p>
-          </div>
-        )}
+        {/* Upcoming Reservations */}
+        <UpcomingReservations itemId={item.id} />
       </div>
     </div>
   );

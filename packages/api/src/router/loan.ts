@@ -1,6 +1,7 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod/v4";
+
 import { and, eq, inArray, isNotNull } from "@acme/db";
 import { items, loans } from "@acme/db/schema";
 
@@ -111,6 +112,9 @@ export const loanRouter = {
           isNotNull(loans.reservedStartDate),
           isNotNull(loans.reservedEndDate),
         ),
+        with: {
+          borrower: true,
+        },
         orderBy: (loans, { asc }) => [asc(loans.reservedStartDate)],
       });
 
@@ -126,4 +130,3 @@ export const loanRouter = {
       });
     }),
 } satisfies TRPCRouterRecord;
-
