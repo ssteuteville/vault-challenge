@@ -15,13 +15,15 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       {/*
           The Stack component displays the current page.
-          It also allows you to configure your screens 
+          Tab navigation is handled by (tabs)/_layout.tsx
+          This Stack handles nested routes like /items/[id]
         */}
       <Stack
         screenOptions={{
           headerStyle: {
-            backgroundColor: "#c03484",
+            backgroundColor: "#18181B",
           },
+          headerTintColor: "#FAFAFA",
           contentStyle: {
             backgroundColor: colorScheme == "dark" ? "#09090B" : "#FFFFFF",
           },

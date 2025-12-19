@@ -45,3 +45,4 @@ overrides:
 publicHoistPattern:
   - "@ianvs/prettier-plugin-sort-imports"
   - prettier-plugin-tailwindcss
+  - "@react-navigation/bottom-tabs"

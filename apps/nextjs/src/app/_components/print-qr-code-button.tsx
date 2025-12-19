@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
-import { QRCodeSVG } from "qrcode.react";
+import { useEffect, useRef, useState } from "react";
 import { Printer } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 
 import { Button } from "@acme/ui/button";
 
@@ -160,4 +160,3 @@ export function PrintQRCodeButton({
     </>
   );
 }
-
