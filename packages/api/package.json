@@ -21,6 +21,7 @@
     "@acme/auth": "workspace:*",
     "@acme/db": "workspace:*",
     "@acme/validators": "workspace:*",
+    "@pinecone-database/pinecone": "^6.1.3",
     "@trpc/server": "catalog:",
     "superjson": "2.2.3",
     "zod": "catalog:"
