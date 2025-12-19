@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Filter, Grid3x3, ImageIcon, List, Search } from "lucide-react";
 
+import { cn } from "@acme/ui";
 import { Badge } from "@acme/ui/badge";
 import { Button } from "@acme/ui/button";
 import {
@@ -16,7 +17,6 @@ import {
   DialogTrigger,
 } from "@acme/ui/dialog";
 import { Input } from "@acme/ui/input";
-import { cn } from "@acme/ui";
 
 import { ItemStatusFilter } from "./item-status-filter";
 import { UserSearch } from "./user-search";
@@ -42,10 +42,7 @@ interface ItemGridProps {
   items: Item[];
 }
 
-function ItemCard(props: {
-  item: Item;
-  viewMode: ViewMode;
-}) {
+function ItemCard(props: { item: Item; viewMode: ViewMode }) {
   const { item, viewMode } = props;
 
   const categories = item.category
@@ -55,8 +52,8 @@ function ItemCard(props: {
   if (viewMode === "list") {
     return (
       <Link href={`/items/${item.id}`}>
-        <div className="bg-muted hover:bg-muted/80 hover:shadow-lg transition-all duration-200 rounded-lg border border-border hover:border-primary/50 p-4 cursor-pointer group flex gap-4">
-          <div className="relative w-24 h-24 shrink-0 overflow-hidden rounded-md bg-muted-foreground/10 border border-border group-hover:border-primary/50 flex items-center justify-center transition-all duration-200">
+        <div className="bg-muted hover:bg-muted/80 border-border hover:border-primary/50 group flex cursor-pointer gap-4 rounded-lg border p-4 transition-all duration-200 hover:shadow-lg">
+          <div className="bg-muted-foreground/10 border-border group-hover:border-primary/50 relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-md border transition-all duration-200">
             {item.imageUrl ? (
               <Image
                 src={item.imageUrl}
@@ -65,33 +62,33 @@ function ItemCard(props: {
                 className="object-cover transition-transform duration-200 group-hover:scale-110"
               />
             ) : (
-              <ImageIcon className="text-muted-foreground group-hover:text-primary transition-colors duration-200 size-6" />
+              <ImageIcon className="text-muted-foreground group-hover:text-primary size-6 transition-colors duration-200" />
             )}
           </div>
-          <div className="flex-1 flex flex-col min-w-0">
-            <h3 className="text-primary group-hover:text-primary/80 text-lg font-bold mb-1 line-clamp-1 transition-colors duration-200">
+          <div className="flex min-w-0 flex-1 flex-col">
+            <h3 className="text-primary group-hover:text-primary/80 mb-1 line-clamp-1 text-lg font-bold transition-colors duration-200">
               {item.title}
             </h3>
-            <p className="text-muted-foreground group-hover:text-foreground/80 text-sm mb-2 line-clamp-2 transition-colors duration-200">
+            <p className="text-muted-foreground group-hover:text-foreground/80 mb-2 line-clamp-2 text-sm transition-colors duration-200">
               {item.description}
             </p>
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex flex-wrap items-center gap-2">
               {categories.map((category) => (
                 <Badge
                   key={category}
                   variant="outline"
-                  className="text-xs font-medium border-primary text-primary"
+                  className="border-primary text-primary text-xs font-medium"
                 >
                   {category}
                 </Badge>
               ))}
               <span
-                className={`text-xs font-semibold px-2 py-1 rounded transition-all duration-200 ${
+                className={`rounded px-2 py-1 text-xs font-semibold transition-all duration-200 ${
                   item.status === "available"
-                    ? "bg-green-500/20 text-green-600 dark:text-green-400 group-hover:bg-green-500/30"
+                    ? "bg-green-500/20 text-green-600 group-hover:bg-green-500/30 dark:text-green-400"
                     : item.status === "borrowed"
-                      ? "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 group-hover:bg-yellow-500/30"
-                      : "bg-gray-500/20 text-gray-600 dark:text-gray-400 group-hover:bg-gray-500/30"
+                      ? "bg-yellow-500/20 text-yellow-600 group-hover:bg-yellow-500/30 dark:text-yellow-400"
+                      : "bg-gray-500/20 text-gray-600 group-hover:bg-gray-500/30 dark:text-gray-400"
                 }`}
               >
                 {item.status}
@@ -105,8 +102,8 @@ function ItemCard(props: {
 
   return (
     <Link href={`/items/${item.id}`}>
-      <div className="bg-muted hover:bg-muted/80 hover:shadow-lg hover:scale-[1.02] transition-all duration-200 rounded-lg border border-border hover:border-primary/50 p-4 cursor-pointer group h-full flex flex-col">
-        <div className="relative aspect-square mb-3 overflow-hidden rounded-md bg-muted-foreground/10 border border-border group-hover:border-primary/50 flex items-center justify-center transition-all duration-200 group-hover:scale-105">
+      <div className="bg-muted hover:bg-muted/80 border-border hover:border-primary/50 group flex h-full cursor-pointer flex-col rounded-lg border p-4 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg">
+        <div className="bg-muted-foreground/10 border-border group-hover:border-primary/50 relative mb-3 flex aspect-square items-center justify-center overflow-hidden rounded-md border transition-all duration-200 group-hover:scale-105">
           {item.imageUrl ? (
             <Image
               src={item.imageUrl}
@@ -115,33 +112,33 @@ function ItemCard(props: {
               className="object-cover transition-transform duration-200 group-hover:scale-110"
             />
           ) : (
-            <ImageIcon className="text-muted-foreground group-hover:text-primary transition-colors duration-200 size-8" />
+            <ImageIcon className="text-muted-foreground group-hover:text-primary size-8 transition-colors duration-200" />
           )}
         </div>
-        <div className="flex-1 flex flex-col">
-          <h3 className="text-primary group-hover:text-primary/80 text-lg font-bold mb-2 line-clamp-2 transition-colors duration-200">
+        <div className="flex flex-1 flex-col">
+          <h3 className="text-primary group-hover:text-primary/80 mb-2 line-clamp-2 text-lg font-bold transition-colors duration-200">
             {item.title}
           </h3>
-          <p className="text-muted-foreground group-hover:text-foreground/80 text-sm mb-3 line-clamp-2 flex-1 transition-colors duration-200">
+          <p className="text-muted-foreground group-hover:text-foreground/80 mb-3 line-clamp-2 flex-1 text-sm transition-colors duration-200">
             {item.description}
           </p>
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex flex-wrap items-center gap-2">
             {categories.map((category) => (
               <Badge
                 key={category}
                 variant="outline"
-                className="text-xs font-medium border-primary text-primary"
+                className="border-primary text-primary text-xs font-medium"
               >
                 {category}
               </Badge>
             ))}
             <span
-              className={`text-xs font-semibold px-2 py-1 rounded transition-all duration-200 ${
+              className={`rounded px-2 py-1 text-xs font-semibold transition-all duration-200 ${
                 item.status === "available"
-                  ? "bg-green-500/20 text-green-600 dark:text-green-400 group-hover:bg-green-500/30"
+                  ? "bg-green-500/20 text-green-600 group-hover:bg-green-500/30 dark:text-green-400"
                   : item.status === "borrowed"
-                    ? "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 group-hover:bg-yellow-500/30"
-                    : "bg-gray-500/20 text-gray-600 dark:text-gray-400 group-hover:bg-gray-500/30"
+                    ? "bg-yellow-500/20 text-yellow-600 group-hover:bg-yellow-500/30 dark:text-yellow-400"
+                    : "bg-gray-500/20 text-gray-600 group-hover:bg-gray-500/30 dark:text-gray-400"
               }`}
             >
               {item.status}
@@ -160,14 +157,15 @@ function ViewToggle(props: {
   const { value, onChange } = props;
 
   return (
-    <div className="flex items-center gap-1 border border-border rounded-md p-1 bg-background">
+    <div className="border-border bg-background flex items-center gap-1 rounded-md border p-1">
       <Button
         variant="ghost"
         size="sm"
         onClick={() => onChange("grid")}
         className={cn(
-          "h-9 w-9 p-0 min-h-9",
-          value === "grid" && "bg-primary text-primary-foreground hover:bg-primary/90"
+          "h-9 min-h-9 w-9 p-0",
+          value === "grid" &&
+            "bg-primary text-primary-foreground hover:bg-primary/90",
         )}
         aria-label="Grid view"
       >
@@ -178,8 +176,9 @@ function ViewToggle(props: {
         size="sm"
         onClick={() => onChange("list")}
         className={cn(
-          "h-9 w-9 p-0 min-h-9",
-          value === "list" && "bg-primary text-primary-foreground hover:bg-primary/90"
+          "h-9 min-h-9 w-9 p-0",
+          value === "list" &&
+            "bg-primary text-primary-foreground hover:bg-primary/90",
         )}
         aria-label="List view"
       >
@@ -228,16 +227,20 @@ export function ItemGrid({ items }: ItemGridProps) {
     <>
       <div className="space-y-6">
         <div>
-          <h3 className="text-sm font-semibold mb-3">Status</h3>
+          <h3 className="mb-3 text-sm font-semibold">Status</h3>
           <ItemStatusFilter value={statusFilter} onChange={setStatusFilter} />
         </div>
         <div>
-          <h3 className="text-sm font-semibold mb-3">View</h3>
+          <h3 className="mb-3 text-sm font-semibold">View</h3>
           <ViewToggle value={viewMode} onChange={setViewMode} />
         </div>
         <div>
-          <h3 className="text-sm font-semibold mb-3">Filter by Owner</h3>
-          <UserSearch value={selectedUserId} onChange={setSelectedUserId} className="w-full" />
+          <h3 className="mb-3 text-sm font-semibold">Filter by Owner</h3>
+          <UserSearch
+            value={selectedUserId}
+            onChange={setSelectedUserId}
+            className="w-full"
+          />
         </div>
       </div>
     </>
@@ -248,25 +251,45 @@ export function ItemGrid({ items }: ItemGridProps) {
       <div>
         {/* Search - Always Visible */}
         <div className="mb-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <div className="relative w-full">
+            <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
             <Input
               type="text"
               placeholder="Search by name, description, or category..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 w-full"
+              className="border-foreground/20 bg-background focus-visible:border-primary focus-visible:ring-primary/20 w-full border-2 pl-9"
             />
           </div>
         </div>
 
         {/* Desktop Controls */}
-        <div className="mb-6 hidden sm:block space-y-4">
-          <div className="flex flex-row gap-3 items-center justify-between">
+        <div className="mb-6 hidden space-y-4 sm:block">
+          {/* First Row: Searches */}
+          <div className="flex items-center justify-between gap-4">
+            <div className="relative w-[600px] max-w-3xl flex-shrink-0">
+              <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+              <Input
+                type="text"
+                placeholder="Search by name, description, or category..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="border-foreground/20 bg-background focus-visible:border-primary focus-visible:ring-primary/20 w-full border-2 pl-9"
+              />
+            </div>
+            <div className="flex-shrink-0">
+              <UserSearch
+                value={selectedUserId}
+                onChange={setSelectedUserId}
+                className="w-auto"
+              />
+            </div>
+          </div>
+          {/* Second Row: Other Controls */}
+          <div className="flex items-center justify-between gap-4">
             <ItemStatusFilter value={statusFilter} onChange={setStatusFilter} />
             <ViewToggle value={viewMode} onChange={setViewMode} />
           </div>
-          <UserSearch value={selectedUserId} onChange={setSelectedUserId} className="w-auto" />
         </div>
 
         {/* Mobile Controls Dialog */}
@@ -278,14 +301,14 @@ export function ItemGrid({ items }: ItemGridProps) {
                 Filters
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-[100vw] w-full h-[100vh] max-h-[100vh] rounded-none border-0 flex flex-col p-0 sm:hidden">
-              <DialogHeader className="px-6 pt-6 pb-4 border-b border-border">
+            <DialogContent className="flex h-[100vh] max-h-[100vh] w-full max-w-[100vw] flex-col rounded-none border-0 p-0 sm:hidden">
+              <DialogHeader className="border-border border-b px-6 pt-6 pb-4">
                 <DialogTitle>Filters</DialogTitle>
               </DialogHeader>
               <div className="flex-1 overflow-y-auto px-6 pb-6">
                 <ControlsContent />
               </div>
-              <DialogFooter className="px-6 py-4 border-t border-border">
+              <DialogFooter className="border-border border-t px-6 py-4">
                 <DialogTrigger asChild>
                   <Button className="w-full">Done</Button>
                 </DialogTrigger>
@@ -306,27 +329,45 @@ export function ItemGrid({ items }: ItemGridProps) {
 
   return (
     <div>
-      {/* Search - Always Visible */}
-      <div className="mb-4">
+      {/* Mobile Search - Always Visible */}
+      <div className="mb-4 sm:hidden">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
           <Input
             type="text"
             placeholder="Search by name, description, or category..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 w-full border-2 border-foreground/20 bg-background focus-visible:border-primary focus-visible:ring-primary/20"
+            className="border-foreground/20 bg-background focus-visible:border-primary focus-visible:ring-primary/20 w-full border-2 pl-9"
           />
         </div>
       </div>
 
       {/* Desktop Controls */}
-      <div className="mb-6 hidden sm:block space-y-4">
-        <div className="flex flex-row gap-3 items-center justify-between">
+      <div className="mb-6 hidden space-y-4 sm:block">
+        {/* First Row: Searches */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="relative w-[600px] max-w-3xl flex-shrink-0">
+            <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+            <Input
+              type="text"
+              placeholder="Search by name, description, or category..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="border-foreground/20 bg-background focus-visible:border-primary focus-visible:ring-primary/20 w-full border-2 pl-9"
+            />
+          </div>
+          <UserSearch
+            value={selectedUserId}
+            onChange={setSelectedUserId}
+            className="w-auto"
+          />
+        </div>
+        {/* Second Row: Other Controls */}
+        <div className="flex items-center justify-between gap-4">
           <ItemStatusFilter value={statusFilter} onChange={setStatusFilter} />
           <ViewToggle value={viewMode} onChange={setViewMode} />
         </div>
-        <UserSearch value={selectedUserId} onChange={setSelectedUserId} className="w-auto" />
       </div>
 
       {/* Mobile Controls Dialog */}
@@ -338,14 +379,14 @@ export function ItemGrid({ items }: ItemGridProps) {
               Filters
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-[100vw] w-full h-[100vh] max-h-[100vh] rounded-none border-0 flex flex-col p-0 sm:hidden">
-            <DialogHeader className="px-6 pt-6 pb-4 border-b border-border">
+          <DialogContent className="flex h-[100vh] max-h-[100vh] w-full max-w-[100vw] flex-col rounded-none border-0 p-0 sm:hidden">
+            <DialogHeader className="border-border border-b px-6 pt-6 pb-4">
               <DialogTitle>Filters</DialogTitle>
             </DialogHeader>
             <div className="flex-1 overflow-y-auto px-6 pb-6">
               <ControlsContent />
             </div>
-            <DialogFooter className="px-6 py-4 border-t border-border">
+            <DialogFooter className="border-border border-t px-6 py-4">
               <DialogTrigger asChild>
                 <Button className="w-full">Done</Button>
               </DialogTrigger>
@@ -354,7 +395,7 @@ export function ItemGrid({ items }: ItemGridProps) {
         </Dialog>
       </div>
       {viewMode === "grid" ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredItems.map((item) => (
             <ItemCard key={item.id} item={item} viewMode={viewMode} />
           ))}
@@ -369,4 +410,3 @@ export function ItemGrid({ items }: ItemGridProps) {
     </div>
   );
 }
-
