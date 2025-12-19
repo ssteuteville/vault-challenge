@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Filter, Grid3x3, ImageIcon, List, Search } from "lucide-react";
+import { Filter, Grid3x3, Heart, ImageIcon, List, Search } from "lucide-react";
 
 import { cn } from "@acme/ui";
 import { Badge } from "@acme/ui/badge";
@@ -18,6 +18,7 @@ import {
 } from "@acme/ui/dialog";
 import { Input } from "@acme/ui/input";
 
+import { FavoriteButton } from "./favorite-button";
 import { ItemStatusFilter } from "./item-status-filter";
 import { UserSearch } from "./user-search";
 
@@ -40,6 +41,8 @@ interface Item {
 
 interface ItemGridProps {
   items: Item[];
+  favoritesOnly?: boolean;
+  onFavoritesOnlyChange?: (value: boolean) => void;
 }
 
 function ItemCard(props: { item: Item; viewMode: ViewMode }) {
@@ -66,9 +69,12 @@ function ItemCard(props: { item: Item; viewMode: ViewMode }) {
             )}
           </div>
           <div className="flex min-w-0 flex-1 flex-col">
-            <h3 className="text-primary group-hover:text-primary/80 mb-1 line-clamp-1 text-lg font-bold transition-colors duration-200">
-              {item.title}
-            </h3>
+            <div className="mb-1 flex items-start justify-between gap-2">
+              <h3 className="text-primary group-hover:text-primary/80 line-clamp-1 flex-1 text-lg font-bold transition-colors duration-200">
+                {item.title}
+              </h3>
+              <FavoriteButton itemId={item.id} size="sm" />
+            </div>
             <p className="text-muted-foreground group-hover:text-foreground/80 mb-2 line-clamp-2 text-sm transition-colors duration-200">
               {item.description}
             </p>
@@ -102,7 +108,10 @@ function ItemCard(props: { item: Item; viewMode: ViewMode }) {
 
   return (
     <Link href={`/items/${item.id}`}>
-      <div className="bg-muted hover:bg-muted/80 border-border hover:border-primary/50 group flex h-full cursor-pointer flex-col rounded-lg border p-4 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg">
+      <div className="bg-muted hover:bg-muted/80 border-border hover:border-primary/50 group relative flex h-full cursor-pointer flex-col rounded-lg border p-4 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg">
+        <div className="absolute right-2 top-2 z-10">
+          <FavoriteButton itemId={item.id} size="sm" />
+        </div>
         <div className="bg-muted-foreground/10 border-border group-hover:border-primary/50 relative mb-3 flex aspect-square items-center justify-center overflow-hidden rounded-md border transition-all duration-200 group-hover:scale-105">
           {item.imageUrl ? (
             <Image
@@ -188,7 +197,11 @@ function ViewToggle(props: {
   );
 }
 
-export function ItemGrid({ items }: ItemGridProps) {
+export function ItemGrid({
+  items,
+  favoritesOnly = false,
+  onFavoritesOnlyChange,
+}: ItemGridProps) {
   const [statusFilter, setStatusFilter] = useState<ItemStatus>("available");
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
@@ -230,6 +243,28 @@ export function ItemGrid({ items }: ItemGridProps) {
           <h3 className="mb-3 text-sm font-semibold">Status</h3>
           <ItemStatusFilter value={statusFilter} onChange={setStatusFilter} />
         </div>
+        {onFavoritesOnlyChange && (
+          <div>
+            <h3 className="mb-3 text-sm font-semibold">Favorites</h3>
+            <Button
+              variant={favoritesOnly ? "default" : "outline"}
+              size="sm"
+              onClick={() => onFavoritesOnlyChange(!favoritesOnly)}
+              className={cn(
+                "min-h-9 gap-1.5 px-3",
+                favoritesOnly && "bg-primary text-primary-foreground",
+              )}
+            >
+              <Heart
+                className={cn(
+                  "size-4",
+                  favoritesOnly ? "fill-current" : "fill-none",
+                )}
+              />
+              Show Favorites Only
+            </Button>
+          </div>
+        )}
         <div>
           <h3 className="mb-3 text-sm font-semibold">View</h3>
           <ViewToggle value={viewMode} onChange={setViewMode} />
@@ -287,7 +322,28 @@ export function ItemGrid({ items }: ItemGridProps) {
           </div>
           {/* Second Row: Other Controls */}
           <div className="flex items-center justify-between gap-4">
-            <ItemStatusFilter value={statusFilter} onChange={setStatusFilter} />
+            <div className="flex items-center gap-2">
+              <ItemStatusFilter value={statusFilter} onChange={setStatusFilter} />
+              {onFavoritesOnlyChange && (
+                <Button
+                  variant={favoritesOnly ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => onFavoritesOnlyChange(!favoritesOnly)}
+                  className={cn(
+                    "min-h-9 gap-1.5 px-3",
+                    favoritesOnly && "bg-primary text-primary-foreground",
+                  )}
+                >
+                  <Heart
+                    className={cn(
+                      "size-4",
+                      favoritesOnly ? "fill-current" : "fill-none",
+                    )}
+                  />
+                  Favorites
+                </Button>
+              )}
+            </div>
             <ViewToggle value={viewMode} onChange={setViewMode} />
           </div>
         </div>
@@ -365,7 +421,28 @@ export function ItemGrid({ items }: ItemGridProps) {
         </div>
         {/* Second Row: Other Controls */}
         <div className="flex items-center justify-between gap-4">
-          <ItemStatusFilter value={statusFilter} onChange={setStatusFilter} />
+          <div className="flex items-center gap-2">
+            <ItemStatusFilter value={statusFilter} onChange={setStatusFilter} />
+            {onFavoritesOnlyChange && (
+              <Button
+                variant={favoritesOnly ? "default" : "outline"}
+                size="sm"
+                onClick={() => onFavoritesOnlyChange(!favoritesOnly)}
+                className={cn(
+                  "min-h-9 gap-1.5 px-3",
+                  favoritesOnly && "bg-primary text-primary-foreground",
+                )}
+              >
+                <Heart
+                  className={cn(
+                    "size-4",
+                    favoritesOnly ? "fill-current" : "fill-none",
+                  )}
+                />
+                Favorites
+              </Button>
+            )}
+          </div>
           <ViewToggle value={viewMode} onChange={setViewMode} />
         </div>
       </div>

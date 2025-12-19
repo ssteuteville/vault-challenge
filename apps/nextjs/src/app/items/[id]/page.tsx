@@ -10,6 +10,7 @@ import { Badge } from "@acme/ui/badge";
 
 import { Breadcrumbs } from "~/app/_components/breadcrumbs";
 import { DelistItemButton } from "~/app/_components/delist-item-button";
+import { FavoriteButton } from "~/app/_components/favorite-button";
 import { ItemImageDialog } from "~/app/_components/item-image-dialog";
 import { PickupDropoffButtons } from "~/app/_components/pickup-dropoff-buttons";
 import { PrintQRCodeButton } from "~/app/_components/print-qr-code-button";
@@ -78,9 +79,14 @@ async function ItemDetailContent({ itemId }: { itemId: string }) {
       <div className="bg-muted/30 border-border rounded-lg border-2 p-4 sm:p-8">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-foreground mb-4 text-3xl font-bold sm:text-4xl">
-            {item.title}
-          </h1>
+          <div className="mb-4 flex items-start justify-between gap-4">
+            <h1 className="text-foreground text-3xl font-bold sm:text-4xl">
+              {item.title}
+            </h1>
+            {session?.user && (
+              <FavoriteButton itemId={item.id} size="lg" />
+            )}
+          </div>
           <div className="flex flex-wrap items-center gap-3">
             {categories.map((category) => (
               <Badge

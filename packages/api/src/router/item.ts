@@ -2,8 +2,8 @@ import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod/v4";
 
-import { desc, eq, sql } from "@acme/db";
-import { CreateItemSchema, UpdateItemSchema, items, loans } from "@acme/db/schema";
+import { desc, eq, sql, and, inArray } from "@acme/db";
+import { CreateItemSchema, UpdateItemSchema, items, loans, favorites } from "@acme/db/schema";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
 
@@ -63,24 +63,62 @@ function computeEffectiveStatus(
 }
 
 export const itemRouter = {
-  all: publicProcedure.query(async ({ ctx }) => {
-    const itemsData = await ctx.db.query.items.findMany({
-      where: eq(items.isListed, true),
-      orderBy: [desc(items.createdAt)],
-      with: {
-        owner: true,
-        loans: {
-          orderBy: [desc(items.createdAt)],
-        },
-      },
-    });
+  all: publicProcedure
+    .input(
+      z
+        .object({
+          favoritesOnly: z.boolean().optional(),
+        })
+        .optional(),
+    )
+    .query(async ({ ctx, input }) => {
+      let favoriteItemIds: string[] | undefined;
 
-    // Compute effective status for each item
-    return itemsData.map((item) => ({
-      ...item,
-      effectiveStatus: computeEffectiveStatus(item.status, item.loans),
-    }));
-  }),
+      // If favoritesOnly is true, get user's favorite item IDs
+      if (input?.favoritesOnly) {
+        if (!ctx.session?.user) {
+          // Return empty array if not authenticated and favoritesOnly is requested
+          return [];
+        }
+
+        const userFavorites = await ctx.db.query.favorites.findMany({
+          where: eq(favorites.userId, ctx.session.user.id),
+          columns: {
+            itemId: true,
+          },
+        });
+
+        favoriteItemIds = userFavorites.map((fav) => fav.itemId);
+
+        // If user has no favorites, return empty array
+        if (favoriteItemIds.length === 0) {
+          return [];
+        }
+      }
+
+      // Build where clause
+      const whereConditions = [eq(items.isListed, true)];
+      if (favoriteItemIds && favoriteItemIds.length > 0) {
+        whereConditions.push(inArray(items.id, favoriteItemIds));
+      }
+
+      const itemsData = await ctx.db.query.items.findMany({
+        where: and(...whereConditions),
+        orderBy: [desc(items.createdAt)],
+        with: {
+          owner: true,
+          loans: {
+            orderBy: [desc(items.createdAt)],
+          },
+        },
+      });
+
+      // Compute effective status for each item
+      return itemsData.map((item) => ({
+        ...item,
+        effectiveStatus: computeEffectiveStatus(item.status, item.loans),
+      }));
+    }),
 
   byId: publicProcedure
     .input(z.object({ id: z.string().uuid() }))

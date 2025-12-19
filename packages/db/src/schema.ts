@@ -6,6 +6,7 @@ import {
   pgTable,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
@@ -116,6 +117,27 @@ export const loans = pgTable(
   ],
 );
 
+// Favorites table
+export const favorites = pgTable(
+  "favorites",
+  {
+    id: uuid("id").notNull().primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    itemId: uuid("item_id")
+      .notNull()
+      .references(() => items.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("favorites_user_id_idx").on(table.userId),
+    index("favorites_item_id_idx").on(table.itemId),
+    // Unique constraint to prevent duplicate favorites
+    uniqueIndex("favorites_user_item_unique_idx").on(table.userId, table.itemId),
+  ],
+);
+
 // Relations
 export const itemRelations = relations(items, ({ one, many }) => ({
   owner: one(user, {
@@ -123,6 +145,7 @@ export const itemRelations = relations(items, ({ one, many }) => ({
     references: [user.id],
   }),
   loans: many(loans),
+  favorites: many(favorites),
 }));
 
 export const loanRelations = relations(loans, ({ one }) => ({
@@ -136,12 +159,24 @@ export const loanRelations = relations(loans, ({ one }) => ({
   }),
 }));
 
+export const favoriteRelations = relations(favorites, ({ one }) => ({
+  user: one(user, {
+    fields: [favorites.userId],
+    references: [user.id],
+  }),
+  item: one(items, {
+    fields: [favorites.itemId],
+    references: [items.id],
+  }),
+}));
+
 // Extend userRelations to include items and loans
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
   items: many(items),
   loans: many(loans),
+  favorites: many(favorites),
 }));
 
 // Zod schemas

@@ -2,13 +2,12 @@ import { Suspense } from "react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { appRouter, createTRPCContext } from "@acme/api";
 import { Button } from "@acme/ui/button";
 
 import { auth, getSession } from "~/auth/server";
-import { HydrateClient, prefetch, trpc } from "~/trpc/server";
+import { HydrateClient } from "~/trpc/server";
 import { HeaderActions } from "./_components/header-actions";
-import { ItemGrid } from "./_components/item-grid";
+import { ItemGridClient } from "./_components/item-grid-client";
 
 function ItemCardSkeleton() {
   return (
@@ -20,38 +19,9 @@ function ItemCardSkeleton() {
   );
 }
 
-async function ItemGridWrapper() {
-  const heads = new Headers(await headers());
-  heads.set("x-trpc-source", "rsc");
-  const ctx = await createTRPCContext({
-    headers: heads,
-    auth,
-  });
-  const caller = appRouter.createCaller(ctx);
-  const items = await caller.item.all();
-
-  // Sort alphabetically by title
-  const sortedItems = [...items].sort((a, b) => a.title.localeCompare(b.title));
-
-  // Map items to include owner data and effective status
-  const itemsWithOwner = sortedItems.map((item) => ({
-    id: item.id,
-    title: item.title,
-    description: item.description,
-    category: item.category,
-    status:
-      (item as { effectiveStatus?: string }).effectiveStatus ?? item.status,
-    imageUrl: item.imageUrl,
-    owner: item.owner,
-  }));
-
-  return <ItemGrid items={itemsWithOwner} />;
-}
 
 export default async function HomePage() {
   const session = await getSession();
-
-  prefetch(trpc.item.all.queryOptions());
 
   const logoutAction = async () => {
     "use server";
@@ -116,7 +86,7 @@ export default async function HomePage() {
                   </div>
                 }
               >
-                <ItemGridWrapper />
+                <ItemGridClient />
               </Suspense>
             ) : (
               <div className="flex h-full items-center justify-center">
