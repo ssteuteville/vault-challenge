@@ -10,6 +10,8 @@ import { Button } from "@acme/ui/button";
 
 import { auth, getSession } from "~/auth/server";
 import { HydrateClient, prefetch, trpc } from "~/trpc/server";
+import { Breadcrumbs } from "~/app/_components/breadcrumbs";
+import { MyStuffTabs } from "~/app/_components/my-stuff-tabs";
 
 function ItemCardSkeleton() {
   return (
@@ -143,29 +145,37 @@ export default async function MyStuffPage() {
       ownerId: session.user.id,
     }),
   );
+  
+  // Prefetch reservations for the reservations tab
+  prefetch(trpc.loan.getByOwner.queryOptions());
 
   return (
     <HydrateClient>
       <main className="container min-h-screen">
-        <div className="mx-auto max-w-4xl py-8">
+        {/* Header with Logo */}
+        <div className="mb-8 py-8">
+          <Link href="/" className="inline-block">
+            <h1 className="text-primary mb-3 text-3xl font-bold tracking-tight sm:text-4xl">
+              VAULT
+            </h1>
+          </Link>
+          <Breadcrumbs
+            items={[
+              { label: "Home", href: "/" },
+              { label: "My Stuff" },
+            ]}
+          />
+        </div>
+
+        <div className="mx-auto max-w-4xl">
           <div className="mb-8 flex items-center justify-between">
-            <h1 className="text-3xl font-bold">My Stuff</h1>
+            <h2 className="text-2xl font-bold">My Stuff</h2>
             <Button asChild>
               <Link href="/items/new">Add Item</Link>
             </Button>
           </div>
 
-          <Suspense
-            fallback={
-              <div className="flex flex-col gap-4">
-                <ItemCardSkeleton />
-                <ItemCardSkeleton />
-                <ItemCardSkeleton />
-              </div>
-            }
-          >
-            <ItemList />
-          </Suspense>
+          <MyStuffTabs itemsContent={<ItemList />} />
         </div>
       </main>
     </HydrateClient>

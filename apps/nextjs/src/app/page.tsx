@@ -66,6 +66,9 @@ export default async function HomePage() {
               {session?.user ? (
                 <>
                   <Button asChild size="lg">
+                    <Link href="/my-reservations">my reservations</Link>
+                  </Button>
+                  <Button asChild size="lg">
                     <Link href="/my-stuff">my stuff</Link>
                   </Button>
                   <form>
