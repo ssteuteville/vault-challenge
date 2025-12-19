@@ -26,10 +26,10 @@ export function HeaderActions({
       {/* Desktop buttons - hidden on mobile */}
       <div className="hidden items-center gap-2 sm:flex">
         <Button asChild size="lg" className="h-8 px-3 sm:h-10 sm:px-6">
-          <Link href="/my-reservations">my reservations</Link>
+          <Link href="/my-reservations">borrowing</Link>
         </Button>
         <Button asChild size="lg" className="h-8 px-3 sm:h-10 sm:px-6">
-          <Link href="/my-stuff">my stuff</Link>
+          <Link href="/my-stuff">sharing</Link>
         </Button>
         <form>
           <Button

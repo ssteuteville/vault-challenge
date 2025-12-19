@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack, useGlobalSearchParams } from "expo-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ReservationModal } from "~/components/ReservationModal";
 import { trpc } from "~/utils/api";
@@ -40,6 +40,71 @@ export default function ItemDetail() {
     ...trpc.loan.getFutureReservations.queryOptions({ itemId: id || "" }),
     enabled: !!id,
   });
+
+  // Get user's current reservation for this item (overlapping today)
+  const { data: currentReservation } = useQuery({
+    ...trpc.loan.getCurrentUserReservation.queryOptions({ itemId: id || "" }),
+    enabled: !!id && !!session?.user,
+  });
+
+  // Get user's loans to check if they have an active loan for this item
+  const { data: userLoans = [] } = useQuery({
+    ...trpc.loan.getByBorrower.queryOptions(),
+    enabled: !!session?.user,
+  });
+
+  const queryClient = useQueryClient();
+
+  // Find active loan for this item
+  const activeLoan = useMemo(() => {
+    if (!id || !userLoans.length) return null;
+    return (
+      userLoans.find(
+        (loan) => loan.itemId === id && loan.status === "active",
+      ) ?? null
+    );
+  }, [userLoans, id]);
+
+  // Check if user can pick up (has approved/reserved reservation within date window)
+  const canPickUp = useMemo(() => {
+    if (!currentReservation) return false;
+    if (currentReservation.borrowedAt) return false; // Already picked up
+    if (!["approved", "reserved"].includes(currentReservation.status))
+      return false;
+    if (!currentReservation.reservedStartDate) return false;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const startDate = new Date(currentReservation.reservedStartDate);
+    startDate.setHours(0, 0, 0, 0);
+    return today >= startDate;
+  }, [currentReservation]);
+
+  const markAsBorrowedMutation = useMutation(
+    trpc.loan.markAsBorrowed.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries(trpc.loan.pathFilter());
+        await queryClient.invalidateQueries(trpc.item.pathFilter());
+        await refetch();
+      },
+      onError: (err) => {
+        console.error("Failed to mark as borrowed:", err);
+      },
+    }),
+  );
+
+  const markAsReturnedMutation = useMutation(
+    trpc.loan.markAsReturned.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries(trpc.loan.pathFilter());
+        await queryClient.invalidateQueries(trpc.item.pathFilter());
+        await refetch();
+      },
+      onError: (err) => {
+        console.error("Failed to mark as returned:", err);
+      },
+    }),
+  );
 
   if (isLoading) {
     return (
@@ -118,7 +183,11 @@ export default function ItemDetail() {
   const canReserve =
     session?.user &&
     session.user.id !== item.ownerId &&
-    item.status === "available";
+    item.status === "available" &&
+    !activeLoan &&
+    !canPickUp;
+
+  const canReturn = !!activeLoan;
 
   const formatDate = (date: Date | null): string => {
     if (!date) return "N/A";
@@ -183,7 +252,8 @@ export default function ItemDetail() {
         <View
           style={[
             styles.contentCard,
-            canReserve && styles.contentCardWithButton,
+            (canReserve || canReturn || canPickUp) &&
+              styles.contentCardWithButton,
           ]}
         >
           {/* Title and Categories */}
@@ -329,7 +399,39 @@ export default function ItemDetail() {
         </View>
       </ScrollView>
 
-      {/* Floating Reserve Button */}
+      {/* Floating Action Button */}
+      {canReturn && (
+        <Pressable
+          style={styles.returnButton}
+          onPress={() => {
+            if (activeLoan) {
+              markAsReturnedMutation.mutate({ loanId: activeLoan.id });
+            }
+          }}
+          disabled={markAsReturnedMutation.isPending}
+        >
+          {markAsReturnedMutation.isPending ? (
+            <ActivityIndicator size="small" color={colors.primaryForeground} />
+          ) : (
+            <Text style={styles.returnButtonText}>Mark as Returned</Text>
+          )}
+        </Pressable>
+      )}
+      {canPickUp && currentReservation && (
+        <Pressable
+          style={styles.pickUpButton}
+          onPress={() => {
+            markAsBorrowedMutation.mutate({ loanId: currentReservation.id });
+          }}
+          disabled={markAsBorrowedMutation.isPending}
+        >
+          {markAsBorrowedMutation.isPending ? (
+            <ActivityIndicator size="small" color={colors.primaryForeground} />
+          ) : (
+            <Text style={styles.pickUpButtonText}>Mark as Picked Up</Text>
+          )}
+        </Pressable>
+      )}
       {canReserve && (
         <Pressable
           style={styles.reserveButton}
@@ -617,6 +719,48 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "700",
     color: colors.primaryForeground,
+  },
+  returnButton: {
+    position: "absolute",
+    bottom: 20,
+    left: 20,
+    right: 20,
+    backgroundColor: "#10B981",
+    borderRadius: 16,
+    paddingVertical: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#10B981",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  returnButtonText: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#FFFFFF",
+  },
+  pickUpButton: {
+    position: "absolute",
+    bottom: 20,
+    left: 20,
+    right: 20,
+    backgroundColor: "#3B82F6",
+    borderRadius: 16,
+    paddingVertical: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#3B82F6",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  pickUpButtonText: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#FFFFFF",
   },
   imageModalBackdrop: {
     flex: 1,

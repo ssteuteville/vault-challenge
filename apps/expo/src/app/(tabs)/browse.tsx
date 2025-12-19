@@ -10,6 +10,7 @@ import {
   StyleSheet,
   Modal,
   FlatList,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Link } from "expo-router";
@@ -585,10 +586,20 @@ function ItemList() {
   const [statusFilter, setStatusFilter] = useState<ItemStatus>("all");
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const { data: items = [], isLoading } = useQuery(
+  const { data: items = [], isLoading, refetch } = useQuery(
     trpc.item.all.queryOptions(),
   );
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await refetch();
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const { data: selectedUser } = useQuery({
     ...trpc.auth.getUserById.queryOptions({ id: selectedUserId ?? "" }),
@@ -730,6 +741,13 @@ function ItemList() {
           keyExtractor={(item) => item.id}
           renderItem={(p) => <ItemCard item={p.item} />}
           contentContainerStyle={{ paddingBottom: 24 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={colors.primary}
+            />
+          }
         />
       )}
     </View>

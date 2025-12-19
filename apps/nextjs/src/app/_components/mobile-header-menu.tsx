@@ -64,10 +64,10 @@ export function MobileHeaderMenu({
         {isAuthenticated ? (
           <>
             <DropdownMenuItem asChild>
-              <Link href="/my-reservations">My Reservations</Link>
+              <Link href="/my-reservations">Borrowing</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href="/my-stuff">My Stuff</Link>
+              <Link href="/my-stuff">Sharing</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
