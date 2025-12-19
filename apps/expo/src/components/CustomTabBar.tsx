@@ -103,6 +103,7 @@ export function CustomTabBar({
               };
             });
 
+            const isCenterTab = index === 1;
             const labelAnimatedStyle = useAnimatedStyle(() => {
               return {
                 opacity: withTiming(isFocused ? 1 : 0, { duration: 200 }),
@@ -158,7 +159,7 @@ export function CustomTabBar({
                   <View
                     style={[
                       styles.iconLabelContainer,
-                      index === 1 && styles.iconLabelContainerCenter,
+                      isCenterTab && styles.iconLabelContainerCenter,
                       isThirdTab && styles.iconLabelContainerRight,
                     ]}
                   >
@@ -169,16 +170,19 @@ export function CustomTabBar({
                         color={isFocused ? config.color : "#9CA3AF"}
                       />
                     </Animated.View>
-                    <AnimatedText
-                      style={[
-                        styles.tabLabel,
-                        labelAnimatedStyle,
-                        { color: isFocused ? config.color : "transparent" },
-                      ]}
-                      numberOfLines={1}
-                    >
-                      {config.label}
-                    </AnimatedText>
+                    {/* Only render label for center tab when focused to keep icon centered */}
+                    {(!isCenterTab || isFocused) && (
+                      <AnimatedText
+                        style={[
+                          styles.tabLabel,
+                          labelAnimatedStyle,
+                          { color: isFocused ? config.color : "transparent" },
+                        ]}
+                        numberOfLines={1}
+                      >
+                        {config.label}
+                      </AnimatedText>
+                    )}
                   </View>
                 </Animated.View>
               </AnimatedPressable>

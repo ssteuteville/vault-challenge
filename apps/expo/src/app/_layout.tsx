@@ -28,7 +28,14 @@ export default function RootLayout() {
             backgroundColor: colorScheme == "dark" ? "#09090B" : "#FFFFFF",
           },
         }}
-      />
+      >
+        <Stack.Screen
+          name="(tabs)"
+          options={{
+            headerShown: false,
+          }}
+        />
+      </Stack>
       <StatusBar />
     </QueryClientProvider>
   );
