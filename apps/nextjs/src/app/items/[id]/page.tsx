@@ -69,12 +69,12 @@ async function ItemDetailContent({ itemId }: { itemId: string }) {
   };
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="mx-auto max-w-4xl space-y-4 sm:space-y-6">
       {/* Image */}
       <ItemImageDialog imageUrl={item.imageUrl} title={item.title} />
 
       {/* Main Content */}
-      <div className="bg-muted/30 border-border rounded-lg border-2 p-6 sm:p-8">
+      <div className="bg-muted/30 border-border rounded-lg border-2 p-4 sm:p-8">
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-foreground mb-4 text-3xl font-bold sm:text-4xl">
@@ -219,14 +219,14 @@ export default async function ItemDetailPage({
 
   return (
     <HydrateClient>
-      <main className="relative container min-h-screen">
+      <main className="relative container min-h-screen px-4 sm:px-0">
         {/* Fixed Reserve Button */}
         <Suspense>
           <ReserveButtonWrapper itemId={id} />
         </Suspense>
 
         {/* Header with Logo and Breadcrumbs */}
-        <div className="mb-8 py-8">
+        <div className="mb-6 py-4 sm:mb-8 sm:py-8">
           <Link href="/" className="inline-block">
             <h1 className="text-primary mb-3 text-3xl font-bold tracking-tight sm:text-4xl">
               VAULT
@@ -243,7 +243,7 @@ export default async function ItemDetailPage({
           </Suspense>
         </div>
 
-        <div className="mx-auto max-w-4xl pb-8">
+        <div className="mx-auto max-w-4xl pb-4 sm:pb-8">
           <Suspense fallback={<ItemDetailSkeleton />}>
             <ItemDetailContent itemId={id} />
           </Suspense>
