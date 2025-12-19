@@ -138,7 +138,21 @@ export const userRelations = relations(user, ({ many }) => ({
 export const CreateItemSchema = createInsertSchema(items, {
   title: z.string().max(256),
   description: z.string(),
-  category: z.string().max(100).optional(),
+  category: z
+    .string()
+    .max(100)
+    .optional()
+    .refine(
+      (val) => {
+        if (!val) return true;
+        // Validate comma-separated string format
+        const categories = val.split(",").map((c) => c.trim());
+        return categories.every((c) => c.length > 0 && c.length <= 50);
+      },
+      {
+        message: "Category must be a comma-separated list of valid categories",
+      },
+    ),
   imageUrl: z
     .union([z.string().url(), z.literal("")])
     .optional()

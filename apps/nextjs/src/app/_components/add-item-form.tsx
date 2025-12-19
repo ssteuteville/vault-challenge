@@ -22,6 +22,7 @@ import { toast } from "@acme/ui/toast";
 
 import { uploadImage } from "~/lib/upload-image";
 import { useTRPC } from "~/trpc/react";
+import { CategorySelect } from "./category-select";
 
 type FormData = z.infer<typeof CreateItemSchema>;
 
@@ -32,6 +33,7 @@ export function AddItemForm() {
 
   const [imageUploading, setImageUploading] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   const createItem = useMutation(
     trpc.item.create.mutationOptions({
@@ -91,7 +93,15 @@ export function AddItemForm() {
   const onSubmit = async (data: FormData) => {
     await createItem.mutateAsync({
       ...data,
+      category: selectedCategories.length > 0 ? selectedCategories.join(", ") : undefined,
       imageUrl: imageUrl || data.imageUrl || null,
+    });
+  };
+
+  const handleCategoryChange = (categories: string[]) => {
+    setSelectedCategories(categories);
+    setValue("category", categories.length > 0 ? categories.join(", ") : "", {
+      shouldValidate: true,
     });
   };
 
@@ -131,13 +141,12 @@ export function AddItemForm() {
 
         <Field data-invalid={!!errors.category}>
           <FieldContent>
-            <FieldLabel htmlFor="category">Category (optional)</FieldLabel>
+            <FieldLabel htmlFor="category">Categories (optional)</FieldLabel>
           </FieldContent>
-          <Input
-            id="category"
-            {...register("category")}
-            aria-invalid={!!errors.category}
-            placeholder="e.g., Tools, Books, Games"
+          <CategorySelect
+            value={selectedCategories}
+            onChange={handleCategoryChange}
+            error={!!errors.category}
           />
           {errors.category && (
             <FieldError errors={[{ message: errors.category.message }]} />

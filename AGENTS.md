@@ -3,39 +3,14 @@
 You're helping me with a coding challenge, here is the prompt i was given.
 
 ```
-You're building an app called Vault
+Vault: The Ultimate Lending Library Challenge
 Prompt
 You’re building Vault, a platform for sharing stuff in a community: board games, tools, books, equipment, anything.
 Your job is to build a full-stack app that handles a small core of lending flows, and then go wild with whatever features you think make it awesome.
 Everyone gets the same core spec. Beyond that, you’re encouraged to specialize and flex in the directions you care about: UX, infra, AI, social features, analytics, etc.
 You can use any tech stack and AI tools you like.
-Prizes
-Every Vault will be judged on how complete it is, how cool it is, and what features it has.
-There will be one $100 goody gift card winner for each of the three prize categories below:
-Best Vault
-Overall strongest combination of core functionality, depth, polish, and creativity.
-Best Vibe Coder
-The person who made the best use of AI tools in their workflow, regardless of how flashy the final app is.
-Coolest Feature
-The single most delightful/clever/useful feature across all Vaults.
-This way you can choose your own objective and decide whether you’re aiming to ship The One True Vault™, be crowned Best Vibe Coder, or show off the wildest feature demo.
-How We’ll Evaluate Vault
-We’re sharing this so you can make good tradeoffs; it’s not a strict checklist. You’ll also be asked to prepare a short presentation showing off your core features and a brief outline of the tools you used and your development process.
-We’ll look at:
-Core functionality & correctness (≈30%)
-Does the basic “library” workflow (browse → borrow → return → see my loans) work reliably and make sense?
-Depth & coherence in your chosen extensions (≈30%)
-Did you pick one or two directions (e.g., social, AI, analytics, rules, devtools) and build something cohesive and thoughtful, or did you spray shallow features everywhere?
-UX / polish / DX (≈20%)
-Is it pleasant to use and easy to run? Would you actually want to use this in real life? Is the README/setup experience reasonable?
-Use of AI-assisted development (≈15%)
-How effectively did you use AI tools in your workflow (prompting, iterating, refactoring, tests, docs, etc.) to build Vault? You don’t need AI-powered features in the app, but we do care how well you vibe-code with AI as your pair.
-Judge’s delight / wildcard (≈5%)
-Room for “this was just really cool” points for originality, fun, humor, or bold choices we didn’t anticipate.
-You are not expected to check every possible box. We’d rather see something small, cohesive, and well-executed than a giant, half-working surface area.
-That said, we do have an idea in mind of how much an average vibe-coder can get done in ~6 hours, so set your ambitions accordingly: pick a realistic core, then decide where you want to go deep.
-Does this seem like a bigger bite than you can chew? Don’t worry about it! Even if you don’t complete the challenge, you will receive 50 nectar points just for participating.
-So, who is in? Challenge starts tomorrow!
+How to win
+Remember, there are 3 $100 gift cards on the line and nectar points for all. To be considered, you need to fill out this form with a loom to your project and any explanation you might want to have considered by judging. Didn’t finish? That's okay too. Submit a loom with how far you got or what you tried and you’re in for the Nectar points. You have until Monday morning 12/22 at 10am pst to be considered.
 ```
 
 ## Pinecone (Vector Database)

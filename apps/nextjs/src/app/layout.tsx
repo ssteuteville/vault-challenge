@@ -16,13 +16,13 @@ export const metadata: Metadata = {
       ? "https://turbo.t3.gg"
       : "http://localhost:3000",
   ),
-  title: "Create T3 Turbo",
-  description: "Simple monorepo with shared backend for web & mobile apps",
+  title: "Vault",
+  description: "A platform for sharing stuff in a community: board games, tools, books, equipment, anything.",
   openGraph: {
-    title: "Create T3 Turbo",
-    description: "Simple monorepo with shared backend for web & mobile apps",
+    title: "Vault",
+    description: "A platform for sharing stuff in a community: board games, tools, books, equipment, anything.",
     url: "https://create-t3-turbo.vercel.app",
-    siteName: "Create T3 Turbo",
+    siteName: "Vault",
   },
   twitter: {
     card: "summary_large_image",
