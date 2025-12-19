@@ -2,8 +2,8 @@ import type { ConfigContext, ExpoConfig } from "expo/config";
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: "expo",
-  slug: "expo",
+  name: "vault-challenge",
+  slug: "vault-challenge",
   scheme: "expo",
   version: "0.1.0",
   orientation: "portrait",
@@ -30,11 +30,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     edgeToEdgeEnabled: true,
   },
-  // extra: {
-  //   eas: {
-  //     projectId: "your-eas-project-id",
-  //   },
-  // },
+  extra: {
+    eas: {
+      projectId: "549f410b-277b-4cd6-96d2-99452f5f2558",
+    },
+  },
   experiments: {
     tsconfigPaths: true,
     typedRoutes: true,
