@@ -9,6 +9,8 @@ import { env } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
 
 import "~/app/styles.css";
+import "react-day-picker/style.css";
+import "~/app/daypicker-theme.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(
@@ -17,10 +19,12 @@ export const metadata: Metadata = {
       : "http://localhost:3000",
   ),
   title: "Vault",
-  description: "A platform for sharing stuff in a community: board games, tools, books, equipment, anything.",
+  description:
+    "A platform for sharing stuff in a community: board games, tools, books, equipment, anything.",
   openGraph: {
     title: "Vault",
-    description: "A platform for sharing stuff in a community: board games, tools, books, equipment, anything.",
+    description:
+      "A platform for sharing stuff in a community: board games, tools, books, equipment, anything.",
     url: "https://create-t3-turbo.vercel.app",
     siteName: "Vault",
   },

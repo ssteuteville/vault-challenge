@@ -1,32 +1,33 @@
-import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
-import { headers } from "next/headers";
+import { notFound } from "next/navigation";
 import { Calendar, CheckCircle2, User, XCircle } from "lucide-react";
 
-import { Badge } from "@acme/ui/badge";
 import { appRouter, createTRPCContext } from "@acme/api";
+import { Badge } from "@acme/ui/badge";
 
-import { auth } from "~/auth/server";
 import { Breadcrumbs } from "~/app/_components/breadcrumbs";
 import { ItemImageDialog } from "~/app/_components/item-image-dialog";
+import { ReserveItemButton } from "~/app/_components/reserve-item-button";
+import { auth, getSession } from "~/auth/server";
 import { HydrateClient, prefetch, trpc } from "~/trpc/server";
 
 function ItemDetailSkeleton() {
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       {/* Image skeleton */}
-      <div className="bg-muted animate-pulse aspect-video rounded-lg border border-border" />
-      
+      <div className="bg-muted border-border aspect-video animate-pulse rounded-lg border" />
+
       {/* Content skeleton */}
-      <div className="bg-muted/30 rounded-lg border-2 border-border p-6 space-y-4">
-        <div className="h-8 w-3/4 rounded bg-muted-foreground/20" />
-        <div className="h-4 w-full rounded bg-muted-foreground/20" />
-        <div className="h-4 w-5/6 rounded bg-muted-foreground/20" />
+      <div className="bg-muted/30 border-border space-y-4 rounded-lg border-2 p-6">
+        <div className="bg-muted-foreground/20 h-8 w-3/4 rounded" />
+        <div className="bg-muted-foreground/20 h-4 w-full rounded" />
+        <div className="bg-muted-foreground/20 h-4 w-5/6 rounded" />
         <div className="flex gap-2">
-          <div className="h-6 w-20 rounded bg-muted-foreground/20" />
-          <div className="h-6 w-24 rounded bg-muted-foreground/20" />
+          <div className="bg-muted-foreground/20 h-6 w-20 rounded" />
+          <div className="bg-muted-foreground/20 h-6 w-24 rounded" />
         </div>
       </div>
     </div>
@@ -42,10 +43,18 @@ async function ItemDetailContent({ itemId }: { itemId: string }) {
   });
   const caller = appRouter.createCaller(ctx);
   const item = await caller.item.byId({ id: itemId });
+  const session = await getSession();
 
   if (!item) {
     notFound();
   }
+
+  const effectiveStatus =
+    (item as { effectiveStatus?: string }).effectiveStatus ?? item.status;
+  const canReserve =
+    session?.user &&
+    session.user.id !== item.ownerId &&
+    effectiveStatus === "available";
 
   const categories = item.category
     ? item.category.split(", ").filter(Boolean)
@@ -66,7 +75,7 @@ async function ItemDetailContent({ itemId }: { itemId: string }) {
       <ItemImageDialog imageUrl={item.imageUrl} title={item.title} />
 
       {/* Main Content */}
-      <div className="bg-muted/30 rounded-lg border-2 border-border p-6 sm:p-8">
+      <div className="bg-muted/30 border-border rounded-lg border-2 p-6 sm:p-8">
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-foreground mb-4 text-3xl font-bold sm:text-4xl">
@@ -84,14 +93,14 @@ async function ItemDetailContent({ itemId }: { itemId: string }) {
             ))}
             <span
               className={`rounded px-3 py-1 text-sm font-semibold ${
-                item.status === "available"
+                effectiveStatus === "available"
                   ? "bg-green-500/20 text-green-600 dark:text-green-400"
-                  : item.status === "borrowed"
+                  : effectiveStatus === "borrowed"
                     ? "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400"
                     : "bg-gray-500/20 text-gray-600 dark:text-gray-400"
               }`}
             >
-              {item.status}
+              {effectiveStatus}
             </span>
           </div>
         </div>
@@ -101,7 +110,7 @@ async function ItemDetailContent({ itemId }: { itemId: string }) {
           <h2 className="text-foreground mb-3 text-xl font-semibold">
             Description
           </h2>
-          <p className="text-muted-foreground whitespace-pre-wrap text-base leading-7">
+          <p className="text-muted-foreground text-base leading-7 whitespace-pre-wrap">
             {item.description}
           </p>
         </div>
@@ -111,7 +120,7 @@ async function ItemDetailContent({ itemId }: { itemId: string }) {
           {/* Owner */}
           <div className="flex items-start gap-3">
             {item.owner?.image ? (
-              <div className="relative mt-0.5 size-10 shrink-0 overflow-hidden rounded-full border-2 border-border">
+              <div className="border-border relative mt-0.5 size-10 shrink-0 overflow-hidden rounded-full border-2">
                 <Image
                   src={item.owner.image}
                   alt={item.owner?.name || item.owner?.email || "Owner"}
@@ -123,9 +132,7 @@ async function ItemDetailContent({ itemId }: { itemId: string }) {
               <User className="text-muted-foreground mt-0.5 size-10 shrink-0" />
             )}
             <div>
-              <p className="text-muted-foreground text-sm font-medium">
-                Owner
-              </p>
+              <p className="text-muted-foreground text-sm font-medium">Owner</p>
               <p className="text-foreground text-base">
                 {item.owner?.name || item.owner?.email || "Unknown"}
               </p>
@@ -204,7 +211,12 @@ export default async function ItemDetailPage({
 
   return (
     <HydrateClient>
-      <main className="container min-h-screen">
+      <main className="relative container min-h-screen">
+        {/* Fixed Reserve Button */}
+        <Suspense>
+          <ReserveButtonWrapper itemId={id} />
+        </Suspense>
+
         {/* Header with Logo and Breadcrumbs */}
         <div className="mb-8 py-8">
           <Link href="/" className="inline-block">
@@ -215,10 +227,7 @@ export default async function ItemDetailPage({
           <Suspense
             fallback={
               <Breadcrumbs
-                items={[
-                  { label: "Home", href: "/" },
-                  { label: "Loading..." },
-                ]}
+                items={[{ label: "Home", href: "/" }, { label: "Loading..." }]}
               />
             }
           >
@@ -248,11 +257,43 @@ async function ItemBreadcrumbs({ itemId }: { itemId: string }) {
 
   return (
     <Breadcrumbs
-      items={[
-        { label: "Home", href: "/" },
-        { label: item?.title || "Item" },
-      ]}
+      items={[{ label: "Home", href: "/" }, { label: item?.title || "Item" }]}
     />
   );
 }
 
+async function ReserveButtonWrapper({ itemId }: { itemId: string }) {
+  const heads = new Headers(await headers());
+  heads.set("x-trpc-source", "rsc");
+  const ctx = await createTRPCContext({
+    headers: heads,
+    auth,
+  });
+  const caller = appRouter.createCaller(ctx);
+  const item = await caller.item.byId({ id: itemId });
+  const session = await getSession();
+
+  if (!item) {
+    return null;
+  }
+
+  const effectiveStatus =
+    (item as { effectiveStatus?: string }).effectiveStatus ?? item.status;
+  const canReserve =
+    session?.user &&
+    session.user.id !== item.ownerId &&
+    effectiveStatus === "available";
+
+  if (!canReserve) {
+    return null;
+  }
+
+  return (
+    <div className="fixed top-8 right-8 z-50">
+      <ReserveItemButton
+        itemId={item.id}
+        requiresApproval={item.requiresApproval}
+      />
+    </div>
+  );
+}

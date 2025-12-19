@@ -1,0 +1,24 @@
+/* React DayPicker theming - override default blue colors */
+/* This file must load after react-day-picker/style.css */
+.rdp-root,
+:root .rdp-root,
+.light .rdp-root,
+.dark .rdp-root,
+html .rdp-root,
+html.light .rdp-root,
+html.dark .rdp-root {
+  --rdp-accent-color: var(--primary);
+  --rdp-accent-background-color: var(--primary);
+  --rdp-today-color: var(--primary);
+  --rdp-day_button-border-radius: var(--radius);
+  --rdp-selected-border: 1px solid var(--primary);
+  --rdp-disabled-opacity: 0.5;
+  --rdp-outside-opacity: 0.5;
+  --rdp-range_middle-background-color: var(--accent);
+  --rdp-range_middle-color: var(--accent-foreground);
+  --rdp-range_start-background: var(--primary);
+  --rdp-range_start-color: var(--primary-foreground);
+  --rdp-range_end-background: var(--primary);
+  --rdp-range_end-color: var(--primary-foreground);
+}
+

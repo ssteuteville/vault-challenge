@@ -33,3 +33,48 @@ Do not proceed with Pinecone-related tasks without consulting the appropriate gu
 @./.agents/PINECONE-java.md
 @./.agents/PINECONE-quickstart.md
 @./.agents/PINECONE-troubleshooting.md
+
+## tRPC Query Patterns
+
+⚠️ **IMPORTANT: When using tRPC queries in React components, DO NOT use `.useQuery()` method directly on tRPC routers.**
+
+The tRPC React context does NOT provide `.useQuery()` methods. Instead, use React Query hooks directly with tRPC query options.
+
+### ❌ WRONG - This will cause "contextMap[utilName] is not a function" error:
+
+```typescript
+const { data } = trpc.loan.getFutureReservations.useQuery({ itemId });
+```
+
+### ✅ CORRECT - Use `useQuery` from `@tanstack/react-query` with `.queryOptions()`:
+
+```typescript
+import { useQuery } from "@tanstack/react-query";
+
+const { data } = useQuery({
+  ...trpc.loan.getFutureReservations.queryOptions({ itemId }),
+  enabled: open, // optional: add React Query options here
+});
+```
+
+### ✅ CORRECT - For mutations, use `useMutation` with `.mutationOptions()`:
+
+```typescript
+import { useMutation } from "@tanstack/react-query";
+
+const createReservation = useMutation(
+  trpc.loan.create.mutationOptions({
+    onSuccess: () => {
+      /* ... */
+    },
+    onError: (err) => {
+      /* ... */
+    },
+  }),
+);
+```
+
+### Reference Examples:
+
+- See `apps/nextjs/src/app/_components/posts.tsx` for query examples
+- See `apps/nextjs/src/app/_components/add-item-form.tsx` for mutation examples

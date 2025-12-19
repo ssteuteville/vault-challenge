@@ -43,6 +43,7 @@ export const itemStatusEnum = pgEnum("item_status", [
 export const loanStatusEnum = pgEnum("loan_status", [
   "pending",
   "approved",
+  "reserved",
   "active",
   "returned",
   "cancelled",
@@ -89,6 +90,14 @@ export const loans = pgTable(
     status: loanStatusEnum("status").notNull().default("pending"),
     requestedAt: timestamp("requested_at").defaultNow().notNull(),
     approvedAt: timestamp("approved_at", { mode: "date", withTimezone: true }),
+    reservedStartDate: timestamp("reserved_start_date", {
+      mode: "date",
+      withTimezone: true,
+    }),
+    reservedEndDate: timestamp("reserved_end_date", {
+      mode: "date",
+      withTimezone: true,
+    }),
     borrowedAt: timestamp("borrowed_at", { mode: "date", withTimezone: true }),
     dueDate: timestamp("due_date", { mode: "date", withTimezone: true }),
     returnedAt: timestamp("returned_at", { mode: "date", withTimezone: true }),
@@ -187,12 +196,15 @@ export const CreateLoanSchema = createInsertSchema(loans, {
   status: z.enum([
     "pending",
     "approved",
+    "reserved",
     "active",
     "returned",
     "cancelled",
     "rejected",
   ]),
   notes: z.string().optional().nullable(),
+  reservedStartDate: z.date().optional().nullable(),
+  reservedEndDate: z.date().optional().nullable(),
   dueDate: z.date().optional().nullable(),
 }).omit({
   id: true,
@@ -209,6 +221,7 @@ export const UpdateLoanSchema = createInsertSchema(loans, {
     .enum([
       "pending",
       "approved",
+      "reserved",
       "active",
       "returned",
       "cancelled",
@@ -216,6 +229,8 @@ export const UpdateLoanSchema = createInsertSchema(loans, {
     ])
     .optional(),
   approvedAt: z.date().optional().nullable(),
+  reservedStartDate: z.date().optional().nullable(),
+  reservedEndDate: z.date().optional().nullable(),
   borrowedAt: z.date().optional().nullable(),
   dueDate: z.date().optional().nullable(),
   returnedAt: z.date().optional().nullable(),
