@@ -14,6 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack, useGlobalSearchParams } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { FavoriteButton } from "~/components/FavoriteButton";
 import { ReservationModal } from "~/components/ReservationModal";
 import { trpc } from "~/utils/api";
 import { authClient } from "~/utils/auth";
@@ -258,7 +259,17 @@ export default function ItemDetail() {
         >
           {/* Title and Categories */}
           <View style={styles.headerSection}>
-            <Text style={styles.title}>{item.title}</Text>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "flex-start",
+                justifyContent: "space-between",
+                gap: 12,
+              }}
+            >
+              <Text style={[styles.title, { flex: 1 }]}>{item.title}</Text>
+              {session?.user && <FavoriteButton itemId={item.id} size="md" />}
+            </View>
             {categories.length > 0 && (
               <View style={styles.categoriesContainer}>
                 {categories.slice(0, 3).map((category) => (

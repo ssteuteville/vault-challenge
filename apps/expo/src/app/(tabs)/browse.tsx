@@ -22,6 +22,7 @@ import { trpc } from "~/utils/api";
 import { authClient } from "~/utils/auth";
 import { colors } from "~/utils/theme";
 import { Header } from "~/components/Header";
+import { FavoriteButton } from "~/components/FavoriteButton";
 
 type ItemStatus = "all" | "available" | "borrowed" | "unavailable";
 
@@ -363,6 +364,8 @@ function FilterModal({
   onStatusChange,
   selectedUserId,
   onUserChange,
+  favoritesOnly,
+  onFavoritesOnlyChange,
 }: {
   visible: boolean;
   onClose: () => void;
@@ -370,6 +373,8 @@ function FilterModal({
   onStatusChange: (status: ItemStatus) => void;
   selectedUserId: string | null;
   onUserChange: (userId: string | null) => void;
+  favoritesOnly: boolean;
+  onFavoritesOnlyChange: (value: boolean) => void;
 }) {
   const [userSearchQuery, setUserSearchQuery] = useState("");
 
@@ -430,6 +435,30 @@ function FilterModal({
                 </Pressable>
               );
             })}
+          </View>
+
+          <View style={styles.modalSection}>
+            <Text style={styles.modalSectionTitle}>Favorites</Text>
+            <Pressable
+              onPress={() => onFavoritesOnlyChange(!favoritesOnly)}
+              style={[
+                styles.modalFilterOption,
+                favoritesOnly
+                  ? styles.modalFilterOptionActive
+                  : styles.modalFilterOptionInactive,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.modalFilterOptionText,
+                  favoritesOnly
+                    ? styles.modalFilterOptionTextActive
+                    : styles.modalFilterOptionTextInactive,
+                ]}
+              >
+                {favoritesOnly ? "✓ " : ""}Show Favorites Only
+              </Text>
+            </Pressable>
           </View>
 
           <View style={styles.modalSection}>
@@ -549,9 +578,12 @@ function ItemCard({ item }: { item: Item }) {
             </View>
 
             <View style={styles.contentContainer}>
-              <Text style={styles.title} numberOfLines={2}>
-                {item.title}
-              </Text>
+              <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
+                <Text style={[styles.title, { flex: 1 }]} numberOfLines={2}>
+                  {item.title}
+                </Text>
+                <FavoriteButton itemId={item.id} size="sm" />
+              </View>
               <Text style={styles.description} numberOfLines={2}>
                 {item.description}
               </Text>
@@ -585,11 +617,14 @@ function ItemList() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<ItemStatus>("all");
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const { data: items = [], isLoading, refetch } = useQuery(
-    trpc.item.all.queryOptions(),
+    trpc.item.all.queryOptions(
+      favoritesOnly ? { favoritesOnly: true } : undefined,
+    ),
   );
 
   const onRefresh = async () => {
@@ -650,6 +685,9 @@ function ItemList() {
     const badges: string[] = [];
     if (statusFilter !== "all") {
       badges.push(getFilterLabel());
+    }
+    if (favoritesOnly) {
+      badges.push("Favorites");
     }
     if (selectedUser) {
       badges.push(selectedUser.name || selectedUser.email || "User");
@@ -720,6 +758,8 @@ function ItemList() {
         onUserChange={(userId) => {
           setSelectedUserId(userId);
         }}
+        favoritesOnly={favoritesOnly}
+        onFavoritesOnlyChange={setFavoritesOnly}
       />
 
       {filteredItems.length === 0 ? (
