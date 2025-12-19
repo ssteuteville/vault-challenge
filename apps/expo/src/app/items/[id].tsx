@@ -15,6 +15,8 @@ import { Stack, useGlobalSearchParams } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { FavoriteButton } from "~/components/FavoriteButton";
+import { FeedbackModal } from "~/components/FeedbackModal";
+import { ItemFeedbacks } from "~/components/ItemFeedbacks";
 import { ReservationModal } from "~/components/ReservationModal";
 import { trpc } from "~/utils/api";
 import { authClient } from "~/utils/auth";
@@ -26,6 +28,8 @@ export default function ItemDetail() {
   const [reservationModalVisible, setReservationModalVisible] = useState(false);
   const [imageModalVisible, setImageModalVisible] = useState(false);
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
+  const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
+  const [returnedLoanId, setReturnedLoanId] = useState<string | null>(null);
 
   const {
     data: item,
@@ -96,10 +100,13 @@ export default function ItemDetail() {
 
   const markAsReturnedMutation = useMutation(
     trpc.loan.markAsReturned.mutationOptions({
-      onSuccess: async () => {
+      onSuccess: async (data) => {
         await queryClient.invalidateQueries(trpc.loan.pathFilter());
         await queryClient.invalidateQueries(trpc.item.pathFilter());
         await refetch();
+        // Open feedback modal
+        setReturnedLoanId(data.id);
+        setFeedbackModalVisible(true);
       },
       onError: (err) => {
         console.error("Failed to mark as returned:", err);
@@ -407,6 +414,9 @@ export default function ItemDetail() {
               </View>
             </View>
           )}
+
+          {/* Feedbacks */}
+          <ItemFeedbacks itemId={item.id} />
         </View>
       </ScrollView>
 
@@ -480,6 +490,19 @@ export default function ItemDetail() {
         itemId={item.id}
         requiresApproval={item.requiresApproval}
       />
+
+      {/* Feedback Modal */}
+      {returnedLoanId && (
+        <FeedbackModal
+          visible={feedbackModalVisible}
+          onClose={() => {
+            setFeedbackModalVisible(false);
+            setReturnedLoanId(null);
+          }}
+          loanId={returnedLoanId}
+          itemId={item.id}
+        />
+      )}
     </View>
   );
 }

@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { View, Text, Image, Pressable, StyleSheet, ActivityIndicator } from "react-native";
 import { Link } from "expo-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import type { RouterOutputs } from "~/utils/api";
+import { FeedbackModal } from "./FeedbackModal";
 import { trpc } from "~/utils/api";
 import { colors } from "~/utils/theme";
 
@@ -92,6 +94,8 @@ function getStatusDisplay(loan: Loan): {
 
 export function BorrowerLoanCard({ loan }: BorrowerLoanCardProps) {
   const queryClient = useQueryClient();
+  const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
+  const [returnedLoanId, setReturnedLoanId] = useState<string | null>(null);
 
   const cancelMutation = useMutation(
     trpc.loan.cancel.mutationOptions({
@@ -117,8 +121,11 @@ export function BorrowerLoanCard({ loan }: BorrowerLoanCardProps) {
 
   const markAsReturnedMutation = useMutation(
     trpc.loan.markAsReturned.mutationOptions({
-      onSuccess: async () => {
+      onSuccess: async (data) => {
         await queryClient.invalidateQueries(trpc.loan.pathFilter());
+        // Open feedback modal
+        setReturnedLoanId(data.id);
+        setFeedbackModalVisible(true);
       },
       onError: (err) => {
         console.error("Failed to mark as returned:", err);
@@ -339,6 +346,19 @@ export function BorrowerLoanCard({ loan }: BorrowerLoanCardProps) {
             )}
           </Pressable>
         </View>
+      )}
+
+      {/* Feedback Modal */}
+      {returnedLoanId && (
+        <FeedbackModal
+          visible={feedbackModalVisible}
+          onClose={() => {
+            setFeedbackModalVisible(false);
+            setReturnedLoanId(null);
+          }}
+          loanId={returnedLoanId}
+          itemId={loan.item.id}
+        />
       )}
     </View>
   );
