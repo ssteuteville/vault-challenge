@@ -62,7 +62,7 @@ export default async function HomePage() {
           </header>
 
           {/* Main Content */}
-          <div className="flex-1 overflow-y-auto px-2 py-4 sm:px-4 sm:py-8">
+          <div className="scrollbar-hide flex-1 overflow-y-auto px-2 py-4 sm:px-4 sm:py-8">
             {session?.user ? (
               <Suspense
                 fallback={
